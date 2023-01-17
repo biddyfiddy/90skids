@@ -3,11 +3,12 @@ import "./App.css";
 import header from './img/header.png';
 import header2 from './img/header2.png';
 
+import { Link } from "react-router-dom";
+
 import one from './img/1.png';
 import two from './img/2.png';
 import three from './img/3.png';
 
-import "@fontsource/montserrat";
 import {ethers} from "ethers"
 
 const style = {
@@ -41,18 +42,7 @@ class App extends React.Component {
     }
 
     async componentDidMount() {
-        const {ethereum} = window
-        if (ethereum) {
-            const accounts = await ethereum.request({
-                method: 'eth_accounts',
-            }).catch((error) => {
-                console.error(error);
-            });
 
-            this.setState({
-                accounts: accounts,
-            })
-        }
     }
 
     handleMouseEnter(event) {
@@ -93,8 +83,9 @@ class App extends React.Component {
                         <div style={{
                             fontWeight: "bold",
                             position: "absolute",
-                            "marginTop": "10%",
-                            "marginLeft": "5%",
+                            marginTop: "10%",
+                            marginLeft: "5%",
+                            fontSize: "1.5rem",
                             zIndex: "1"
                         }} id="pane1Hover">SHOP</div>
                         <img id="pane1Hover" src={one} style={{
@@ -117,10 +108,15 @@ class App extends React.Component {
                         <div style={{
                             fontWeight: "bold",
                             position: "absolute",
-                            "marginTop": "10%",
-                            "marginLeft": "5%",
+                            marginTop: "10%",
+                            marginLeft: "5%",
+                            fontSize: "1.5rem",
                             zIndex: "1"
-                        }}                          id="pane2Hover">ABOUT</div>
+                        }}                          id="pane2Hover">PROJECT
+
+                        <br />
+                        <Link style={{ fontSize: "1rem", }} to="/about">* about</Link>
+                        </div>
                         <img id="pane2Hover" src={two} style={{
                             opacity: pane2Hover ? "1.0" : "0.0",
                             height: "100%",
@@ -141,8 +137,9 @@ class App extends React.Component {
                         <div style={{
                             fontWeight: "bold",
                             position: "absolute",
-                            "marginTop": "10%",
-                            "marginLeft": "5%",
+                            marginTop: "10%",
+                            marginLeft: "5%",
+                            fontSize: "1.5rem",
                             zIndex: "1"
 
                         }}  id="pane3Hover">MINT</div>
