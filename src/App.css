@@ -1,0 +1,43 @@
+@font-face {
+    font-family: "PP Neue Montreal VF";
+    src: url('./font/PPNeueMontreal-Variable.ttf');
+}
+
+.flex {
+    flex-direction: row;
+    display: flex;
+    border: 1px dashed;
+}
+
+.flex_container {
+    border-left: 1px dashed;
+    border-right: 1px dashed;
+    flex: 1
+}
+
+@media only screen and (max-width: 900px) {
+    .flex {
+        flex-direction: column;
+        display: flex;
+        border: 1px dashed;
+    }
+
+    .flex_container {
+        border-top: 1px dashed;
+        border-bottom: 1px dashed;
+        flex: 1
+    }
+}
+
+a:link {
+    text-decoration: inherit;
+    color: inherit;
+    cursor: auto;
+}
+
+a:visited {
+    text-decoration: inherit;
+    color: inherit;
+    cursor: auto;
+}
+
