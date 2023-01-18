@@ -6,13 +6,22 @@
 .flex {
     flex-direction: row;
     display: flex;
-    border: 1px dashed;
+    align-items: center;
+    justify-content: center;
+}
+
+.flex_about {
+    flex-direction: row;
+    display: flex;
+    margin-bottom: 50px;
+    align-items: flex-start;
+    justify-content: center;
 }
 
 .flex_container {
-    border-left: 1px dashed;
-    border-right: 1px dashed;
-    flex: 1
+    border-top: 1px dashed;
+    border-bottom: 1px dashed;
+    flex: 1;
 }
 
 @media only screen and (max-width: 900px) {

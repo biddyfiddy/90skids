@@ -3,9 +3,9 @@ import "./App.css";
 import header from './img/header.png';
 import header2 from './img/header2.png';
 
-import one from './img/1.png';
-import two from './img/2.png';
-import three from './img/3.png';
+import cone from './img/cone.png';
+import cup from './img/cup.png';
+
 
 import {ethers} from "ethers"
 
@@ -69,9 +69,15 @@ class About extends React.Component {
 
                     </div>
                 </div>
-                <div style={{margin: "5%"}}>
-                    90's Kids is a digital collectible project and brand inspired by skateboard culture of the 1990s and 2000s that continues to define the trends of today. Beyond just another PFP project, 90s Kids will foster a community and support that encourage members to create art and skate together through contests both on and off board, both online and IRL.
-                    Skateboarding was originally based in counter culture ideology, but the creativity and DIY-attitude of skateboarders has impacted culture on a broader scale, much like the evolution of NFTs in mainstream culture. This project pays homage to the striking power of skateboarding as a guiding force for creativity in the Web3 era. 90s Kids provides a model example of transitioning existing spaces from physical to digital.
+                <div style={{margin: "5%", flex: "row", maxWidth: "1600px"}}>
+                    <div class="flex_about">
+                        <div style={{width: "45%"}}>90's Kids is a digital collectible project and brand inspired by skateboard culture of the 1990s and 2000s that continues to define the trends of today. Beyond just another PFP project, 90s Kids will foster a community and support that encourage members to create art and skate together through contests both on and off board, both online and IRL.</div>
+                        <img style={{marginLeft: "50px", maxWidth: "200px", width: "auto", height: "auto"}} src={cup} />
+                    </div>
+                    <div class="flex_about">
+                        <img style={{maxWidth: "200px", width: "auto", height: "auto"}} src={cone} />
+                        <div style={{marginLeft: "50px", width: "45%"}}>Skateboarding was originally based in counter culture ideology, but the creativity and DIY-attitude of skateboarders has impacted culture on a broader scale, much like the evolution of NFTs in mainstream culture. This project pays homage to the striking power of skateboarding as a guiding force for creativity in the Web3 era. 90s Kids provides a model example of transitioning existing spaces from physical to digital.</div>
+                    </div>
                 </div>
                 <div style={{    textAlign: "center"}}>
                     <a href={"https://opensea.io/collection/90s-kids"} target="_blank">opensea</a>

@@ -6,8 +6,11 @@ import header2 from './img/header2.png';
 import { Link } from "react-router-dom";
 
 import one from './img/1.png';
+import oneBw from './img/1_bw.png';
 import two from './img/2.png';
+import twoBw from './img/2_bw.png';
 import three from './img/3.png';
+import threeBw from './img/3_bw.png';
 
 import {ethers} from "ethers"
 
@@ -74,7 +77,9 @@ class App extends React.Component {
                 <div class="flex">
                     <div style={{
                         height: "600px",
-                        flex: 1
+                        maxWidth: "750px",
+                        flex: 1,
+                        border: "1px dashed"
                     }}
                          onMouseEnter={this.handleMouseEnter}
                          onMouseLeave={this.handleMouseLeave}
@@ -88,8 +93,8 @@ class App extends React.Component {
                             fontSize: "1.5rem",
                             zIndex: "1"
                         }} id="pane1Hover">SHOP</div>
-                        <img id="pane1Hover" src={one} style={{
-                            opacity: pane1Hover ? "1.0" : "0.0",
+                        <img id="pane1Hover" src={pane1Hover ? one : oneBw} style={{
+                            opacity: pane1Hover ? "1.0" : "0.5",
                             height: "100%",
                             width : "100%",
                             transition: "opacity 300ms ease-in",
@@ -100,6 +105,7 @@ class App extends React.Component {
                     </div>
                     <div class="flex_container" style={{
                         height: "600px",
+                        maxWidth: "750px",
                     }}
                          onMouseEnter={this.handleMouseEnter}
                          onMouseLeave={this.handleMouseLeave}
@@ -117,8 +123,8 @@ class App extends React.Component {
                         <br />
                         <Link style={{ fontSize: "1rem", }} to="/about">* about</Link>
                         </div>
-                        <img id="pane2Hover" src={two} style={{
-                            opacity: pane2Hover ? "1.0" : "0.0",
+                        <img id="pane2Hover" src={pane2Hover ? two : twoBw}  style={{
+                            opacity: pane2Hover ? "1.0" : "0.5",
                             height: "100%",
                             width : "100%",
                             transition: "opacity 300ms ease-in",
@@ -128,7 +134,9 @@ class App extends React.Component {
                     </div>
                     <div style={{
                         height: "600px",
-                        flex: 1
+                        maxWidth: "750px",
+                        flex: 1,
+                        border: "1px dashed"
                     }}
                          onMouseEnter={this.handleMouseEnter}
                          onMouseLeave={this.handleMouseLeave}
@@ -143,8 +151,8 @@ class App extends React.Component {
                             zIndex: "1"
 
                         }}  id="pane3Hover">MINT</div>
-                        <img id="pane3Hover" src={three} style={{
-                            opacity: pane3Hover ? "1.0" : "0.0",
+                        <img id="pane3Hover" src={pane3Hover ? three : threeBw} style={{
+                            opacity: pane3Hover ? "1.0" : "0.5",
                             height: "100%",
                             width : "100%",
                             transition: "opacity 300ms ease-in",
