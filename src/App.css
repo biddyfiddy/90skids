@@ -22,14 +22,6 @@ body {
     justify-content: center;
 }
 
-.button {
-    color: white;
-    background: black;
-    border: 1px solid;
-    border-radius: 8px;
-    padding: 10px;
-}
-
 .flex_about {
     flex-direction: row;
     display: flex;
@@ -48,12 +40,10 @@ body {
     .flex {
         flex-direction: column;
         display: flex;
-        border: 1px dashed;
     }
 
     .flex_container {
-        border-top: 1px dashed;
-        border-bottom: 1px dashed;
+        border: 1px dashed;
         flex: 1
     }
 
