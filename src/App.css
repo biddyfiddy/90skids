@@ -3,11 +3,37 @@
     src: url('./font/PPNeueMontreal-Variable.ttf');
 }
 
+@font-face {
+    font-family: "FP Free Hand";
+    src: url('./font/FP_HAND.svg') format('svg');
+}
+
+body {
+    font-family: 'PP Neue Montreal VF', Fallback, sans-serif;
+}
+
+.about_text {
+    width: 45%;
+}
+
+.about_text {
+    width: 45%;
+}
+
 .flex {
     flex-direction: row;
     display: flex;
     align-items: center;
     justify-content: center;
+ /*   font-family: 'FP Free Hand', Fallback, sans-serif;*/
+}
+
+.button {
+    color: white;
+    background: black;
+    border: 1px solid;
+    border-radius: 8px;
+    padding: 10px;
 }
 
 .flex_about {
@@ -35,6 +61,11 @@
         border-top: 1px dashed;
         border-bottom: 1px dashed;
         flex: 1
+    }
+
+    .about_text {
+        width: 45%;
+        font-size: 12px;
     }
 }
 
