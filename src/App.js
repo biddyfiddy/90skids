@@ -97,10 +97,9 @@ class App extends React.Component {
                 </div>
                 <div class="flex">
                     <div style={{
-                        maxWidth: "33%",
                         flex: 1,
                         border: "1px dashed"
-                    }}
+                    }} class="flex_pane"
                          onMouseEnter={this.handleMouseEnter}
                          onMouseLeave={this.handleMouseLeave}
                          id="pane1Hover"
@@ -124,9 +123,7 @@ class App extends React.Component {
                         }} />
 
                     </div>
-                    <div class="flex_container" style={{
-                        maxWidth: "33%",
-                    }}
+                    <div class="flex_container" 
                          onMouseEnter={this.handleMouseEnter}
                          onMouseLeave={this.handleMouseLeave}
                          id="pane2Hover"
@@ -152,10 +149,9 @@ class App extends React.Component {
                         }} /></Link>
                     </div>
                     <div style={{
-                        maxWidth: "33%",
                         flex: 1,
                         border: "1px dashed"
-                    }}
+                    }} class="flex_pane"
                          onMouseEnter={this.handleMouseEnter}
                          onMouseLeave={this.handleMouseLeave}
                          id="pane3Hover"
