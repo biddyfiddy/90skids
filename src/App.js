@@ -130,7 +130,8 @@ class App extends React.Component {
                          onMouseEnter={this.handleMouseEnter}
                          onMouseLeave={this.handleMouseLeave}
                          id="pane2Hover"
-                    >
+
+                    ><Link to="/about">
                         <div style={{
                             fontWeight: "bold",
                             position: "absolute",
@@ -141,7 +142,6 @@ class App extends React.Component {
                         }}                          id="pane2Hover">
                             <img src={project} style={{ height: "20px"}}/>
                         <br />
-                        <Link style={{ fontSize: "1rem", }} to="/about">* about</Link>
                         </div>
                         <img id="pane2Hover" src={pane2Hover ? two : twoBw}  style={{
                             opacity: pane2Hover ? "1.0" : "0.5",
@@ -149,7 +149,7 @@ class App extends React.Component {
                             transition: "opacity 300ms ease-in",
                             MozTransition:  "opacity 300ms ease-in",
                             WebkitTransition:  "opacity 300ms ease-in"
-                        }} />
+                        }} /></Link>
                     </div>
                     <div style={{
                         maxWidth: "33%",
@@ -188,7 +188,7 @@ class App extends React.Component {
                     <a href={"https://www.instagram.com/90s_kids_club/"} target="_blank">instagram</a>
                 </div>
                 <div style={{    textAlign: "center"}}>
-                    goatpasture © 2023
+                    90s kids © 2023
                 </div>
             </div>
         );
