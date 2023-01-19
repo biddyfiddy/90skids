@@ -3,11 +3,6 @@
     src: url('./font/PPNeueMontreal-Variable.ttf');
 }
 
-@font-face {
-    font-family: "FP Free Hand";
-    src: url('./font/FP_HAND.svg') format('svg');
-}
-
 body {
     font-family: 'PP Neue Montreal VF', Fallback, sans-serif;
 }
@@ -25,7 +20,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
- /*   font-family: 'FP Free Hand', Fallback, sans-serif;*/
 }
 
 .button {
