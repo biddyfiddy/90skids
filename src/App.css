@@ -7,6 +7,12 @@ body {
     font-family: 'PP Neue Montreal VF', Fallback, sans-serif;
 }
 
+.park {
+    max-width: 500px;
+    width: auto;
+    height: auto;
+}
+
 .about_text {
     width: 45%;
 }
@@ -60,6 +66,12 @@ body {
     .about_text {
         width: 45%;
         font-size: 12px;
+    }
+
+    .park {
+        max-width: 300px;
+        width: auto;
+        height: auto;
     }
 }
 
