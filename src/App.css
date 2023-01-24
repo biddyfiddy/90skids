@@ -17,6 +17,11 @@ body {
     width: 45%;
 }
 
+.about_flex {
+    display: flex;
+    flex-direction: row;
+}
+
 .about_text {
     width: 45%;
 }
@@ -47,6 +52,18 @@ body {
     max-width: 33%;
 }
 
+.about_flex_text_1 {
+    flex:1;
+    padding: 50px;
+    padding-left: 160px;
+}
+
+.about_flex_text_2 {
+    flex:1;
+    padding: 50px;
+    padding-right:160px;
+}
+
 @media only screen and (max-width: 900px) {
     .flex {
         flex-direction: column;
@@ -66,6 +83,21 @@ body {
     .about_text {
         width: 45%;
         font-size: 12px;
+    }
+
+    .about_flex {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .about_flex_text_1 {
+        padding:10px;
+        margin:10px;
+    }
+
+    .about_flex_text_2 {
+        padding:10px;
+        margin:10px;
     }
 
     .park {
