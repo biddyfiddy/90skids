@@ -18,6 +18,12 @@ import explosion from './img/explosion.png';
 
 import {ethers} from "ethers"
 
+import os from './img/os.png';
+import osHoverImage from './img/os_hover.png';
+
+import discord from './img/discord.png';
+import discordHoverImage from './img/discord_hover.png';
+
 const style = {
     position: 'absolute',
     top: '50%',
@@ -39,13 +45,13 @@ class About extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            pane1Hover: false,
-            pane2Hover: false,
-            pane3Hover: false,
-            accounts: null,
+            osHover: false,
+            discordHover: false,
         }
         this.handleMouseEnter = this.handleMouseEnter.bind(this);
         this.handleMouseLeave = this.handleMouseLeave.bind(this);
+        this.opensea = this.opensea.bind(this);
+        this.discord = this.discord.bind(this);
     }
 
     async componentDidMount() {
@@ -64,12 +70,20 @@ class About extends React.Component {
         });
     };
 
+    opensea() {
+        window.open("https://opensea.io/collection/90s-kids", "_blank")
+    }
+
+    discord() {
+        window.open("https://t.co/y2nWTn2K1B", "_blank")
+    }
+
     render() {
-        const { pane1Hover, pane2Hover, pane3Hover } = this.state;
+        const { osHover, discordHover } = this.state;
         return (
             <div style={{backgroundColor: "black", color: "lightgray", lineHeight: "1.8", letterSpacing: "1px"}}>
                 <div style={{textAlign: "center", marginTop: "50px"}}>
-                    <video style={{    maxWidth: "50%" }} autoPlay loop muted>
+                    <video style={{    maxWidth: "50%" }} autoPlay playsInline loop muted>
                         <source src={banner} type="video/mp4" />
                     </video>
                 </div>
@@ -87,7 +101,19 @@ class About extends React.Component {
                     <img class="park" src={park} />
                 </div>
                 <div style={{marginTop: "50px"}}>
+
                     <div className="flex_about">
+                        To Enter our Skate and Art contests and learn more about our monthly drops mechanic, join<img id="discordHover" src={discordHover ? discordHoverImage : discord} style={{ marginLeft: "10px", width: "100px"}} onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave} onClick={this.discord} />
+                    </div>
+                    <div className="flex_about">
+                        Become part of the community and own your first 90s kid on<img id="osHover" src={osHover ? osHoverImage : os} style={{ marginLeft: "10px", width: "100px"}} onMouseEnter={this.handleMouseEnter} onMouseLeave={this.handleMouseLeave} onClick={this.opensea} />
+                    </div>
+                    <div style={{textAlign: "center", marginTop: "50px", marginBottom: "50px"}}>
+                        <video style={{ maxWidth: "20%" }} autoPlay playsInline loop muted>
+                            <source src={mov} type="video/mp4" />
+                        </video>
+                    </div>
+                    {/*<div className="flex_about">
                         <div className="about_text" style={{marginLeft: "50px"}}>Every month, we will release new characters that can be claimed for free through our burn mechanics. These characters will be available on a first-come, first-serve basis, and some may be available for purchase. To be eligible for the first drops, you will need to own a full set of the OG collection (VX, Cone, Keyset, and coffee cup).</div>
                     </div>
                     <div style={{ textAlign: "center" }}>
@@ -121,9 +147,9 @@ class About extends React.Component {
                     </div>
                     <div className="flex_about">
                         <div className="about_text" style={{marginLeft: "50px"}}>We want to be active members of the NFT events and participate in physical events, such as NFT NYC and other meetups. These events will include skate contests, art shows, and other fun activities. We look forward to hanging out and getting to know our collectors in person!</div>
-                    </div>
+                    </div>*/}
                 </div>
-                <div style={{    textAlign: "center"}}>
+{/*                <div style={{    textAlign: "center"}}>
                     <a href={"https://opensea.io/collection/90s-kids"} target="_blank">opensea</a>
                     <span> / </span>
                     <a href={"https://t.co/y2nWTn2K1B"} target="_blank">discord</a>
@@ -131,7 +157,7 @@ class About extends React.Component {
                     <a href={"https://mobile.twitter.com/90s_kids_club"} target="_blank">twitter</a>
                     <span> / </span>
                     <a href={"https://www.instagram.com/90s_kids_club/"} target="_blank">instagram</a>
-                </div>
+                </div>*/}
                 <div style={{    textAlign: "center"}}>
                     goatpasture © 2022
                 </div>
