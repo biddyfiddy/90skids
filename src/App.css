@@ -30,6 +30,13 @@ body {
     max-width: 33%;
 }
 
+.flex_new {
+    flex-direction: row;
+    margin: 100px;
+    display: flex;
+    justify-content: center;
+}
+
 .flex {
     flex-direction: row;
     display: flex;
@@ -104,6 +111,14 @@ body {
         max-width: 300px;
         width: auto;
         height: auto;
+    }
+
+    .flex_new {
+        flex-direction: column;
+        margin: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 }
 

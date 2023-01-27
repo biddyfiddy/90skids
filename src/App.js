@@ -1,14 +1,13 @@
 import React from "react";
 import "./App.css";
 import header from './img/header.png';
-import header2 from './img/header2.png';
 
 import { Link } from "react-router-dom";
 
-import one from './img/1.png';
-import oneBw from './img/1_bw.png';
-import two from './img/2.png';
-import twoBw from './img/2_bw.png';
+import one from './img/2.png';
+import oneBw from './img/2_bw.png';
+import two from './img/1.png';
+import twoBw from './img/1_bw.png';
 import three from './img/3.png';
 import threeBw from './img/3_bw.png';
 import os from './img/os.png';
@@ -17,6 +16,7 @@ import osHoverImage from './img/os_hover.png';
 import shop from './img/shop.png';
 import project from './img/project.png';
 import mint from './img/mint.png';
+import star from './img/star.png';
 
 import {ethers} from "ethers"
 
@@ -83,8 +83,8 @@ class App extends React.Component {
                 }}>
                     <div style={{flex:1, margin: "10px"}}>
                         <picture>
-                            <source media="(max-width: 900px)" srcSet={header2} style={{height: "50px"}} />
-                            <img src={header} style={{height: "50px"}}/>
+                            <source media="(max-width: 900px)" srcSet={header} style={{height: "75px"}} />
+                            <img src={header} style={{height: "75px"}}/>
                         </picture>
                     </div>
                     <div style={{margin: "20px"}} id="osHover"
@@ -92,6 +92,7 @@ class App extends React.Component {
                          onMouseLeave={this.handleMouseLeave}
                         onClick={this.opensea}
                     >
+                        <img id="star" src={star} style={{ width: "20px", marginRight:"20px"}} />
                         <img id="osHover" src={osHover ? osHoverImage : os} style={{ width: "100px"}} />
                         </div>
                 </div>
@@ -107,7 +108,7 @@ class App extends React.Component {
                         <div style={{
                             fontWeight: "bold",
                             position: "absolute",
-                            marginTop: "10%",
+                            marginTop: "8%",
                             marginLeft: "5%",
                             fontSize: "1.5rem",
                             zIndex: "1"
@@ -132,7 +133,7 @@ class App extends React.Component {
                         <div style={{
                             fontWeight: "bold",
                             position: "absolute",
-                            marginTop: "10%",
+                            marginTop: "8%",
                             marginLeft: "5%",
                             fontSize: "1.5rem",
                             zIndex: "1"
@@ -159,7 +160,7 @@ class App extends React.Component {
                         <div style={{
                             fontWeight: "bold",
                             position: "absolute",
-                            marginTop: "10%",
+                            marginTop: "8%",
                             marginLeft: "5%",
                             fontSize: "1.5rem",
                             zIndex: "1"
