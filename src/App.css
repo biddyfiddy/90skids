@@ -71,6 +71,10 @@ body {
     padding-right:160px;
 }
 
+.flex_img {
+    width: 50%;
+}
+
 @media only screen and (max-width: 900px) {
     .flex {
         flex-direction: column;
@@ -119,6 +123,10 @@ body {
         display: flex;
         justify-content: center;
         align-items: center;
+    }
+
+    .flex_img {
+        width: 100%;
     }
 }
 

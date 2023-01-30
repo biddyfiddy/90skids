@@ -13,5 +13,5 @@ const ETHER_NETWORK = process.env.ETHER_NETWORK;
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'build')));
-
+app.get('*', (req, res) => res.sendFile(path.resolve('client', 'build', 'index.html'))
 app.listen(port, () => console.log(`Example app listening on port ${port}!`));

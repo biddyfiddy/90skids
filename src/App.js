@@ -104,7 +104,7 @@ class App extends React.Component {
                          onMouseEnter={this.handleMouseEnter}
                          onMouseLeave={this.handleMouseLeave}
                          id="pane1Hover"
-                    >
+                    ><Link to="/shop">
                         <div style={{
                             fontWeight: "bold",
                             position: "absolute",
@@ -122,7 +122,7 @@ class App extends React.Component {
                             MozTransition:  "opacity 300ms ease-in",
                             WebkitTransition:  "opacity 300ms ease-in"
                         }} />
-
+                        </Link>
                     </div>
                     <div class="flex_container" 
                          onMouseEnter={this.handleMouseEnter}
@@ -156,7 +156,7 @@ class App extends React.Component {
                          onMouseEnter={this.handleMouseEnter}
                          onMouseLeave={this.handleMouseLeave}
                          id="pane3Hover"
-                    >
+                    ><Link to="/mint">
                         <div style={{
                             fontWeight: "bold",
                             position: "absolute",
@@ -174,7 +174,7 @@ class App extends React.Component {
                             transition: "opacity 300ms ease-in",
                             MozTransition:  "opacity 300ms ease-in",
                             WebkitTransition:  "opacity 300ms ease-in"
-                        }} />
+                        }} /></Link>
                     </div>
                 </div>
                 <div style={{    textAlign: "center"}}>
