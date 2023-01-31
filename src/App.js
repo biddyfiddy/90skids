@@ -18,24 +18,6 @@ import project from './img/project.png';
 import mint from './img/mint.png';
 import star from './img/star.png';
 
-import {ethers} from "ethers"
-
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '500px',
-    height: '600px',
-    backgroundColor: 'black',
-    textAlign: "center",
-    color: 'lightgray',
-    outline: 0,
-    borderRadius: "10px",
-    boxShadow: "lightgray 0px 0px 20px 0px"
-
-};
-
 class App extends React.Component {
 
     constructor(props) {
@@ -84,7 +66,7 @@ class App extends React.Component {
                     <div style={{flex:1, margin: "10px"}}>
                         <picture>
                             <source media="(max-width: 900px)" srcSet={header} style={{height: "75px"}} />
-                            <img src={header} style={{height: "75px"}}/>
+                            <img src={header} style={{height: "75px"}} alt="header"/>
                         </picture>
                     </div>
                     <div style={{margin: "20px"}} id="osHover"
@@ -92,8 +74,8 @@ class App extends React.Component {
                          onMouseLeave={this.handleMouseLeave}
                         onClick={this.opensea}
                     >
-                        <img id="star" src={star} style={{ width: "20px", marginRight:"20px"}} />
-                        <img id="osHover" src={osHover ? osHoverImage : os} style={{ width: "100px"}} />
+                        <img id="star" src={star} style={{ width: "20px", marginRight:"20px"}} alt="star" />
+                        <img id="osHover" src={osHover ? osHoverImage : os} style={{ width: "100px"}} alt="opensea"/>
                         </div>
                 </div>
                 <div class="flex">
@@ -113,7 +95,7 @@ class App extends React.Component {
                             fontSize: "1.5rem",
                             zIndex: "1"
                         }} id="pane1Hover">
-                            <img src={shop} style={{ height: "20px"}}/>
+                            <img src={shop} style={{ height: "20px"}} alt="shop"/>
                         </div>
                         <img id="pane1Hover" src={pane1Hover ? one : oneBw} style={{
                             opacity: pane1Hover ? "1.0" : "0.5",
@@ -121,7 +103,7 @@ class App extends React.Component {
                             transition: "opacity 300ms ease-in",
                             MozTransition:  "opacity 300ms ease-in",
                             WebkitTransition:  "opacity 300ms ease-in"
-                        }} />
+                        }} alt="panel1" />
                         </Link>
                     </div>
                     <div class="flex_container" 
@@ -138,7 +120,7 @@ class App extends React.Component {
                             fontSize: "1.5rem",
                             zIndex: "1"
                         }}                          id="pane2Hover">
-                            <img src={project} style={{ height: "20px"}}/>
+                            <img src={project} style={{ height: "20px"}}  alt="project"/>
                         <br />
                         </div>
                         <img id="pane2Hover" src={pane2Hover ? two : twoBw}  style={{
@@ -147,7 +129,7 @@ class App extends React.Component {
                             transition: "opacity 300ms ease-in",
                             MozTransition:  "opacity 300ms ease-in",
                             WebkitTransition:  "opacity 300ms ease-in"
-                        }} /></Link>
+                        }}  alt="panel2" /></Link>
                     </div>
                     <div style={{
                         flex: 1,
@@ -166,7 +148,7 @@ class App extends React.Component {
                             zIndex: "1"
 
                         }}  id="pane3Hover">
-                            <img src={mint} style={{ height: "20px"}}/>
+                            <img src={mint} style={{ height: "20px"}}  alt="mint"/>
                         </div>
                         <img id="pane3Hover" src={pane3Hover ? three : threeBw} style={{
                             opacity: pane3Hover ? "1.0" : "0.5",
@@ -174,15 +156,15 @@ class App extends React.Component {
                             transition: "opacity 300ms ease-in",
                             MozTransition:  "opacity 300ms ease-in",
                             WebkitTransition:  "opacity 300ms ease-in"
-                        }} /></Link>
+                        }}  alt="panel3"/></Link>
                     </div>
                 </div>
                 <div style={{    textAlign: "center"}}>
-                    <a href={"https://t.co/y2nWTn2K1B"} target="_blank">discord</a>
+                    <a href={"https://t.co/y2nWTn2K1B"} rel="noopener noreferrer" target="_blank">discord</a>
                     <span> / </span>
-                    <a href={"https://mobile.twitter.com/90s_kids_club"} target="_blank">twitter</a>
+                    <a href={"https://mobile.twitter.com/90s_kids_club"} rel="noopener noreferrer" target="_blank">twitter</a>
                     <span> / </span>
-                    <a href={"https://www.instagram.com/90s_kids_club/"} target="_blank">instagram</a>
+                    <a href={"https://www.instagram.com/90s_kids_club/"} rel="noopener noreferrer" target="_blank">instagram</a>
                 </div>
                 <div style={{    textAlign: "center"}}>
                     90s kids © 2023
