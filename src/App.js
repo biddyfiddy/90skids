@@ -160,11 +160,11 @@ class App extends React.Component {
                     </div>
                 </div>
                 <div style={{    textAlign: "center"}}>
-                    <a href={"https://t.co/y2nWTn2K1B"} rel="noopener noreferrer" target="_blank">discord</a>
+                    <a style={{cursor: "pointer"}} href={"https://t.co/y2nWTn2K1B"} rel="noopener noreferrer" target="_blank">discord</a>
                     <span> / </span>
-                    <a href={"https://mobile.twitter.com/90s_kids_club"} rel="noopener noreferrer" target="_blank">twitter</a>
+                    <a style={{cursor: "pointer"}} href={"https://mobile.twitter.com/90s_kids_club"} rel="noopener noreferrer" target="_blank">twitter</a>
                     <span> / </span>
-                    <a href={"https://www.instagram.com/90s_kids_club/"} rel="noopener noreferrer" target="_blank">instagram</a>
+                    <a style={{cursor: "pointer"}} href={"https://www.instagram.com/90s_kids_club/"} rel="noopener noreferrer" target="_blank">instagram</a>
                 </div>
                 <div style={{    textAlign: "center"}}>
                     90s kids © 2023

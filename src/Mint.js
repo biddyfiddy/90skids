@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-
+import { Link } from "react-router-dom";
 import header from './img/header.png';
 
 import banner from './img/banner.mp4';
@@ -18,8 +18,8 @@ class Mint extends React.Component {
         return (
             <div style={{backgroundSize: "cover", backgroundColor: "black", color: "lightgray", lineHeight: "1.8", letterSpacing: "1px"}}>
 
-                <div style={{textAlign: "center", marginTop: "10px"}}>
-                    <img src={header} style={{marginLeft: "10px", height: "75px", zIndex: 1, position: "absolute"}} alt="header"/>
+                <div style={{textAlign: "center", marginTop: "10px"}}><Link to="/">
+                    <img src={header} style={{marginLeft: "10px", height: "75px", zIndex: 1, position: "absolute"}} alt="header"/></Link>
                     <video style={{maxWidth: "100%"}} autoPlay playsInline loop muted>
                         <source src={banner} type="video/mp4"/>
                     </video>
@@ -30,7 +30,7 @@ class Mint extends React.Component {
                 </div>
 
                 <div style={{textAlign: "center"}}>
-                    90s kids © 2022
+                    90s kids © 2023
                 </div>
             </div>
         );

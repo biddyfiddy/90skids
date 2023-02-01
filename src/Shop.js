@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-
+import { Link } from "react-router-dom";
 import header from './img/header_black.png';
 
 import bg from './img/shop_bg.png';
@@ -21,11 +21,11 @@ class Shop extends React.Component {
                     display: "flex",
                     alignItems: "center"
                 }}>
-                    <div style={{margin: "10px"}}>
+                    <div style={{margin: "10px"}}><Link to="/">
                         <picture>
                             <source media="(max-width: 900px)" srcSet={header} style={{height: "75px"}}/>
                             <img src={header} style={{height: "75px"}} alt="header"/>
-                        </picture>
+                        </picture></Link>
                     </div>
                 </div>
 
@@ -36,7 +36,7 @@ class Shop extends React.Component {
                 </div>
 
                 <div style={{color: "black", textAlign: "right", marginTop: "500px"}}>
-                    90s kids © 2022
+                    90s kids © 2023
                 </div>
             </div>
         );

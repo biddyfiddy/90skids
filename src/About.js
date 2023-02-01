@@ -1,6 +1,6 @@
 import React from "react";
 import "./App.css";
-
+import { Link } from "react-router-dom";
 import header from './img/header.png';
 
 import bg from './img/bg.png';
@@ -68,11 +68,11 @@ class About extends React.Component {
                     display: "flex",
                     alignItems: "center"
                 }}>
-                    <div style={{margin: "10px"}}>
+                    <div style={{margin: "10px"}}><Link to="/">
                         <picture>
                             <source media="(max-width: 900px)" srcSet={header} style={{height: "75px"}}/>
-                            <img src={header} style={{height: "75px"}} alt="header"/>
-                        </picture>
+                            <img src={header} style={{height: "75px"}} alt="header" />
+                        </picture></Link>
                     </div>
                 </div>
 
@@ -121,7 +121,7 @@ class About extends React.Component {
                 </div>
 
                 <div style={{textAlign: "center"}}>
-                    90s kids © 2022
+                    90s kids © 2023
                 </div>
             </div>
         );
