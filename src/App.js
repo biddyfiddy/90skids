@@ -138,7 +138,7 @@ class App extends React.Component {
                          onMouseEnter={this.handleMouseEnter}
                          onMouseLeave={this.handleMouseLeave}
                          id="pane3Hover"
-                    ><Link to="/mint">
+                    ><Link to="/burn">
                         <div style={{
                             fontWeight: "bold",
                             position: "absolute",
