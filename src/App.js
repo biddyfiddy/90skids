@@ -164,7 +164,7 @@ class App extends React.Component {
                     <span> / </span>
                     <a style={{cursor: "pointer"}} href={"https://mobile.twitter.com/90s_kids_club"} rel="noopener noreferrer" target="_blank">twitter</a>
                     <span> / </span>
-                    <a style={{cursor: "pointer"}} href={"https://www.instagram.com/90s_kids_club/"} rel="noopener noreferrer" target="_blank">instagram</a>
+                    <a style={{cursor: "pointer"}} href={"https://www.instagram.com/nineties.entertainment/"} rel="noopener noreferrer" target="_blank">instagram</a>
                 </div>
                 <div style={{    textAlign: "center"}}>
                     90s kids © 2023
