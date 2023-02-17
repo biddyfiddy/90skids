@@ -1,144 +1,152 @@
 @font-face {
-    font-family: "PP Neue Montreal VF";
-    src: url('./font/PPNeueMontreal-Variable.ttf');
+  font-family: "PP Neue Montreal VF";
+  src: url("./font/PPNeueMontreal-Variable.ttf");
 }
 
 body {
-    font-family: 'PP Neue Montreal VF', Fallback, sans-serif;
+  font-family: "PP Neue Montreal VF", Fallback, sans-serif;
 }
 
 .park {
-    max-width: 500px;
-    width: auto;
-    height: auto;
+  max-width: 500px;
+  width: auto;
+  height: auto;
 }
 
 .about_text {
-    width: 45%;
+  width: 45%;
 }
 
 .about_flex {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
 
 .about_text {
-    width: 45%;
+  width: 45%;
 }
 
 .flex_pane {
-    max-width: 33%;
+  max-width: 33%;
 }
 
 .flex_new {
-    flex-direction: row;
-    margin: 100px;
-    display: flex;
-    justify-content: center;
+  flex-direction: row;
+  margin: 100px;
+  display: flex;
+  justify-content: center;
 }
 
 .flex {
-    flex-direction: row;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  flex-direction: row;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .flex_about {
-    flex-direction: row;
-    display: flex;
-    margin-bottom: 50px;
-    align-items: flex-start;
-    justify-content: center;
+  flex-direction: row;
+  display: flex;
+  margin-bottom: 50px;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .flex_container {
-    border-top: 1px dashed;
-    border-bottom: 1px dashed;
-    flex: 1;
-    max-width: 33%;
+  border-top: 1px dashed;
+  border-bottom: 1px dashed;
+  flex: 1;
+  max-width: 33%;
 }
 
 .about_flex_text_1 {
-    flex:1;
-    padding: 50px;
-    padding-left: 160px;
+  flex: 1;
+  padding: 50px;
+  padding-left: 160px;
 }
 
 .about_flex_text_2 {
-    flex:1;
-    padding: 50px;
-    padding-right:160px;
+  flex: 1;
+  padding: 50px;
+  padding-right: 160px;
 }
 
 .flex_img {
-    width: 50%;
+  width: 50%;
 }
 
 @media only screen and (max-width: 900px) {
-    .flex {
-        flex-direction: column;
-        display: flex;
-    }
+  .flex {
+    flex-direction: column;
+    display: flex;
+  }
 
-    .flex_container {
-        border: 1px dashed;
-        flex: 1;
-        max-width: 100%;
-    }
+  .flex_container {
+    border: 1px dashed;
+    flex: 1;
+    max-width: 100%;
+  }
 
-    .flex_pane {
-        max-width: 100%;
-    }
+  .flex_pane {
+    max-width: 100%;
+  }
 
-    .about_text {
-        width: 45%;
-        font-size: 12px;
-    }
+  .about_text {
+    width: 45%;
+    font-size: 12px;
+  }
 
-    .about_flex {
-        display: flex;
-        flex-direction: column;
-    }
+  .about_flex {
+    display: flex;
+    flex-direction: column;
+  }
 
-    .about_flex_text_1 {
-        padding:10px;
-        margin:10px;
-    }
+  .about_flex_text_1 {
+    padding: 10px;
+    margin: 10px;
+  }
 
-    .about_flex_text_2 {
-        padding:10px;
-        margin:10px;
-    }
+  .about_flex_text_2 {
+    padding: 10px;
+    margin: 10px;
+  }
 
-    .park {
-        max-width: 300px;
-        width: auto;
-        height: auto;
-    }
+  .park {
+    max-width: 300px;
+    width: auto;
+    height: auto;
+  }
 
-    .flex_new {
-        flex-direction: column;
-        margin: 100px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+  .flex_new {
+    flex-direction: column;
+    margin: 100px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-    .flex_img {
-        width: 100%;
-    }
+  .flex_img {
+    width: 100%;
+  }
 }
 
 a:link {
-    text-decoration: inherit;
-    color: inherit;
-    cursor: auto;
+  text-decoration: inherit;
+  color: inherit;
+  cursor: auto;
 }
 
 a:visited {
-    text-decoration: inherit;
-    color: inherit;
-    cursor: auto;
+  text-decoration: inherit;
+  color: inherit;
+  cursor: auto;
 }
 
+.img_selected {
+  filter: blur(4px) grayscale(100%);
+  width: 200px;
+}
+
+.img_unselected {
+  width: 200px;
+}

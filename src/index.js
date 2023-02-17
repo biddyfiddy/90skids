@@ -9,17 +9,17 @@ import Mint from "./Mint";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 ReactDOM.render(
-    <React.StrictMode>
-        <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<Layout />}>
-                    <Route index element={<App />} />
-                    <Route path="about" element={<About />} />
-                    <Route path="shop" element={<Shop />} />
-                    <Route path="burn" element={<Mint />} />
-                </Route>
-            </Routes>
-        </BrowserRouter>
-    </React.StrictMode>,
-    document.getElementById("root")
+  <React.StrictMode>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<App />} />
+          <Route path="about" element={<About />} />
+          <Route path="shop" element={<Shop />} />
+          <Route path="burn" element={<Mint />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  </React.StrictMode>,
+  document.getElementById("root")
 );
