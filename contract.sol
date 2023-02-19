@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/cryptography/draft-EIP712.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract RareShoes2 is ERC721URIStorage, Ownable, EIP712 {
+contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
   using ECDSA for bytes32;
 
   using Counters for Counters.Counter;
@@ -21,13 +21,12 @@ contract RareShoes2 is ERC721URIStorage, Ownable, EIP712 {
 
   Counters.Counter private _tokenIdCounter;
 
-  constructor(string memory baseTokenURI, address systemAddress) ERC721("90s Kids 1.0", "90SKIDS1") EIP712("90s Kids 1.0", "90SKIDS1") {
-    _baseTokenURI = baseTokenURI;
+  constructor(address systemAddress) ERC721("90s Kids", "90SKIDS") EIP712("90s Kids", "90SKIDS") {
     _systemAddress =  systemAddress;
   }
 
-  function publicSale(
-    uint256 amount,
+  function publicMint(
+    string memory uri,
     string memory nonce,
     bytes32 hash,
     bytes memory signature
@@ -36,17 +35,14 @@ contract RareShoes2 is ERC721URIStorage, Ownable, EIP712 {
     require(matchSigner(hash, signature), "Mint must be done from 90skidsclub.xyz");
     require(!_usedNonces[nonce], "Hash reused");
     require(
-      hashTransaction(msg.sender, amount, nonce) == hash,
+      hashTransaction(msg.sender, uri, nonce) == hash,
       "Hash failed"
     );
 
     _usedNonces[nonce] = true;
-
-    for (uint256 i = 1; i <= amount; i++) {
       _safeMint(msg.sender, _tokenIdCounter.current());
-      _setTokenURI(_tokenIdCounter.current(), append(_tokenIdCounter.current()));
+      _setTokenURI(_tokenIdCounter.current(), uri);
       _tokenIdCounter.increment();
-    }
   }
 
   function mint(address receiver, string memory tokenURI) external payable onlyOwner {
@@ -65,19 +61,15 @@ contract RareShoes2 is ERC721URIStorage, Ownable, EIP712 {
 
   function hashTransaction(
     address sender,
-    uint256 amount,
+    string memory uri,
     string memory nonce
   ) public view returns (bytes32) {
 
     bytes32 hash = keccak256(
-      abi.encodePacked(sender, amount, nonce, address(this))
+      abi.encodePacked(sender, uri, nonce, address(this))
     );
 
     return hash;
-  }
-
-  function _baseURI() internal view override returns (string memory) {
-    return _baseTokenURI;
   }
 
   function withdrawAll(address payable to) external onlyOwner {
