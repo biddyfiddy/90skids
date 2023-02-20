@@ -13,6 +13,10 @@ const EARLY_ACCESS = process.env.EARLY_ACCESS;
 const ETHER_NETWORK = process.env.ETHER_NETWORK;
 const API_KEY = process.env.API_KEY;
 const WALLET_KEY = process.env.WALLET_KEY;
+const ALCHEMY_KEY = process.env.ALCHEMY_KEY;
+const ALCHEMY_KEY_TEST = process.env.ALCHEMY_KEY_TEST;
+const INFURA_KEY = process.env.INFURA_KEY;
+const POCKET_KEY = process.env.POCKET_KEY;
 
 const {
   abi: ogAbi,
@@ -103,11 +107,15 @@ const getBurned = async (address) => {
     .then((response) => {
       let responseData = response.data;
       let tokens = responseData.result;
+      if (tokens ===  'Max rate limit reached') {
+        return -1;
+      }
 
       let tokenId = [];
       if (!tokens) {
         return tokenId;
       }
+
       tokens.forEach((token) => {
         if (token.to === NULL_ADDRESS) {
           tokenId.push(token.tokenID);
@@ -129,6 +137,11 @@ const getOwnedTokens = async (address, contractAddress) => {
     )
     .then((response) => {
       let responseData = response.data;
+      let tokens = responseData.result;
+      if (tokens ===  'Max rate limit reached') {
+        return -1;
+      }
+
       let tokens = responseData.result;
       let tokenId = [];
       if (!tokens) {
@@ -202,13 +215,18 @@ app.post("/owned", async (req, res) => {
     return;
   }
 
+  if (tokens === -1) {
+      res.status(500).json({ message: "Server is under heavy load, check back later." });
+      return;
+  }
+
   if (EARLY_ACCESS == 1 && tokens.length < 50) {
     res.status(500).json({ message: "Only SOTY members get early access" });
     return;
   }
 
   // Get owned redeemed tokens
-  let ownedNewTokens = await getOwnedTokens(address.toLowerCase(), newAddress);
+  /// let ownedNewTokens = await getOwnedTokens(address.toLowerCase(), newAddress);
 
   let burned = await getBurned(address.toLowerCase());
 
@@ -228,11 +246,24 @@ app.post("/owned", async (req, res) => {
     return;
   }*/
 
-  let provider = new ethers.providers.EtherscanProvider(ETHER_NETWORK, API_KEY);
+  //let provider = new ethers.providers.EtherscanProvider(ETHER_NETWORK, API_KEY);
+  let provider = ethers.getDefaultProvider(ETHER_NETWORK, {
+        alchemy: ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST,
+        etherscan: API_KEY,
+        pocket: { applicationId : '90skids', applicationSecretKey : POCKET_KEY},
+        quorum: 1
+  });
   const contract = new ethers.Contract(testAddress, testAbi, provider);
 
   let imageUris = tokens.map(async (token) => {
-    let uri = await contract.tokenURI(token);
+    let uri = await contract.tokenURI(token).catch(err => {
+        console.log(err);
+    });
+
+    if (!uri) {
+        return {};
+    }
+
     uri = uri.replace("ipfs://", "https://nftstorage.link/ipfs/");
     let imageUri;
     let response = await axios
