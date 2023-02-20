@@ -32,10 +32,9 @@ const style = {
   position: "absolute",
   top: "50%",
   left: "50%",
+  maxHeight: "500px",
+  overflow: "scroll",
   transform: "translate(-50%, -50%)",
-  /* width: "80%",
-  height: "50%",*/
-
   backgroundColor: "black",
   textAlign: "center",
   alignItems: "center",
@@ -155,12 +154,16 @@ class Mint extends React.Component {
       });
     });
 
+    this.setState({
+      burnHashes: resolvedHashes,
+    });
+
     if (resolvedHashes && resolvedHashes.length > 0) {
-      this.mint(resolvedHashes);
+      this.mint(resolvedHashes.length);
     }
   }
 
-  async mint(hashes) {
+  async mint(numToMint) {
     const { accounts } = this.state;
 
     if (!accounts || accounts.length === 0) {
@@ -177,55 +180,66 @@ class Mint extends React.Component {
       "any"
     );
     const signer = ethersProvider.getSigner();
+    let rshoePcontractFactory = new ethers.ContractFactory(
+      newAbi,
+      newByteCode,
+      signer
+    );
 
-    let mintHashes = hashes.map(async (hash) => {
-      const requestOptions = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          address: accounts[0],
-        }),
-      };
+    let contractInstance = rshoePcontractFactory.attach(newAddress);
 
-      let response = await fetch("/mint", requestOptions);
+    let mintHashes = [];
+    try {
+      for (let i = 0; i < numToMint; i++) {
+        const requestOptions = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            address: accounts[0],
+          }),
+        };
 
-      if (!response || response.status !== 200) {
-        let reason = await response.json();
-        return;
+        let response = await fetch("/mint", requestOptions);
+
+        if (!response || response.status !== 200) {
+          let reason = await response.json();
+          continue;
+        }
+
+        let json = await response.json();
+
+        let rawTxn = await contractInstance.populateTransaction.publicMint(
+          json.uri,
+          json.nonce,
+          json.hash,
+          json.signature
+        );
+
+        if (!rawTxn) {
+          continue;
+        }
+
+        let signedTxn = await signer.sendTransaction(rawTxn);
+
+        if (!signedTxn) {
+          return;
+        }
+
+        mintHashes.push(
+          await signedTxn.wait().then((reciept) => {
+            return "https://etherscan.io/tx/" + signedTxn.hash;
+          })
+        );
       }
-
-      let json = await response.json();
-      let rshoePcontractFactory = new ethers.ContractFactory(
-        newAbi,
-        newByteCode,
-        signer
-      );
-
-      let contractInstance = rshoePcontractFactory.attach(newAddress);
-
-      let rawTxn = await contractInstance.populateTransaction.publicMint(
-        json.uri,
-        json.nonce,
-        json.hash,
-        json.signature
-      );
-
-      if (!rawTxn) {
-        return;
-      }
-
-      let signedTxn = await signer.sendTransaction(rawTxn);
-
-      if (!signedTxn) {
-        return;
-      }
-
-      return await signedTxn.wait().then((reciept) => {
-        return "https://etherscan.io/tx/" + signedTxn.hash;
+    } catch (err) {
+      this.setState({
+        failedMessage: err.message,
+        burningTokens: false,
+        mintingTokens: false,
       });
-    });
+    }
 
     let resolvedHashes = await Promise.all(mintHashes).catch((err) => {
       this.setState({
@@ -236,7 +250,6 @@ class Mint extends React.Component {
     this.setState({
       burningTokens: false,
       mintingTokens: false,
-      burnHashes: hashes,
       mintHashes: resolvedHashes,
     });
   }
@@ -315,18 +328,30 @@ class Mint extends React.Component {
 
     let response = await fetch("/owned", requestOptions);
     let json = await response.json();
+    let tokens = json.tokens;
 
     if (response.status != 200) {
       this.setState({
         imageLoading: false,
         imageLoadingError: json.message,
       });
+    } else if (json.numToMint) {
+      this.setState({
+        imageLoading: false,
+        imageLoadingError: "",
+        images: tokens,
+        burnLimit: tokens.length >= 50 ? 2 : 1,
+        modalOpen: true,
+        mintingTokens: true,
+        burnHashes: json.burnedHashes,
+      });
+      this.mint(json.numToMint);
     } else {
       this.setState({
         imageLoading: false,
         imageLoadingError: "",
-        images: json,
-        burnLimit: json.length >= 50 ? 2 : 1,
+        images: tokens,
+        burnLimit: tokens.length >= 50 ? 2 : 1,
       });
     }
   }
@@ -441,10 +466,11 @@ class Mint extends React.Component {
   }
 
   renderBurningTokens() {
+    const { selectedNfts } = this.state;
     return (
       <div style={{ margin: "50px" }}>
         <ScaleLoader color="#FF7044" />
-        <div>Burning Tokens</div>
+        <div>Burning {selectedNfts.length} Token(s)</div>
       </div>
     );
   }
@@ -460,10 +486,11 @@ class Mint extends React.Component {
   }
 
   renderMintingTokens() {
+    const { selectedNfts } = this.state;
     return (
       <div style={{ margin: "50px" }}>
         <ScaleLoader color="#FF7044" />
-        <div>Minting Tokens</div>
+        <div>Minting {selectedNfts.length} Token(s)</div>
       </div>
     );
   }
@@ -472,7 +499,7 @@ class Mint extends React.Component {
     const { mintHashes, burnHashes } = this.state;
     return (
       <div style={{ margin: "50px" }}>
-        <h2>You have successfully redeemed your token(s)</h2>
+        <h2>You have successfully redeemed {mintHashes.length} token(s)</h2>
         <h4>Burned Token Transaction(s)</h4>
         <div>
           {burnHashes.map((burnHash) => (

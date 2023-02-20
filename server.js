@@ -98,68 +98,82 @@ app.post("/mint", async (req, res) => {
   res.status(200).json(sign);
 });
 
-const getBurned = async (address) => {
-  let network = ETHER_NETWORK === "mainnet" ? "" : `-${ETHER_NETWORK}`;
+const getBurnedAlchemy = async (address, contractAddress) => {
+  let alchemyKey = ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST;
+  const options = {
+    method: "POST",
+    url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/v2/${alchemyKey}`,
+    headers: { accept: "application/json", "content-type": "application/json" },
+    data: {
+      id: 1,
+      jsonrpc: "2.0",
+      method: "alchemy_getAssetTransfers",
+      params: [
+        {
+          fromAddress: address,
+          contractAddress: [contractAddress],
+          toAddress: NULL_ADDRESS,
+          category: ["erc721"],
+          withMetadata: false,
+        },
+      ],
+    },
+  };
+
   return await axios
-    .get(
-      `https://api${network}.etherscan.io/api?module=account&action=tokennfttx&contractaddress=${testAddress}&address=${address}&page=1&offset=100&startblock=0&endblock=27025780&sort=asc&apikey=${API_KEY}`
-    )
-    .then((response) => {
-      let responseData = response.data;
-      let tokens = responseData.result;
-      if (tokens ===  'Max rate limit reached') {
-        return -1;
+    .request(options)
+    .then(function (response) {
+      let transfers = response.data.result.transfers;
+      if (!transfers) {
+        return [];
       }
-
-      let tokenId = [];
-      if (!tokens) {
-        return tokenId;
-      }
-
-      tokens.forEach((token) => {
-        if (token.to === NULL_ADDRESS) {
-          tokenId.push(token.tokenID);
-        }
+      return transfers.map((transfer) => {
+        //return parseInt(transfer.tokenId, 16);
+        return transfer.hash;
       });
-
-      return tokenId;
     })
-    .catch((err) => {
-      console.log(err);
+    .catch(function (error) {
+      console.error(error);
     });
 };
 
-const getOwnedTokens = async (address, contractAddress) => {
-  let network = ETHER_NETWORK === "mainnet" ? "" : `-${ETHER_NETWORK}`;
+const getOwnedTokensAlchemy = async (address, contractAddress) => {
+  let alchemyKey = ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST;
+  const options = {
+    method: "GET",
+    url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/nft/v2/${alchemyKey}/getNFTs`,
+    params: {
+      owner: address,
+      contractAddresses: [contractAddress],
+      withMetadata: "true",
+    },
+    headers: { accept: "application/json" },
+  };
+
   return axios
-    .get(
-      `https://api${network}.etherscan.io/api?module=account&action=tokennfttx&contractaddress=${contractAddress}&address=${address}&page=1&offset=100&startblock=0&endblock=27025780&sort=asc&apikey=${API_KEY}`
-    )
+    .request(options)
     .then((response) => {
       let responseData = response.data;
-      let tokens = responseData.result;
-      if (tokens ===  'Max rate limit reached') {
-        return -1;
-      }
+      let tokens = responseData.ownedNfts;
 
-      let tokens = responseData.result;
-      let tokenId = [];
+      let tokenIds = [];
       if (!tokens) {
-        return tokenId;
+        return tokenIds;
       }
       tokens.forEach((token) => {
-        if (token.to === address) {
-          tokenId.push(token.tokenID);
-        }
+        let imageUriRaw = token.metadata.image;
+        let imageUri = imageUriRaw.replace(
+          "ipfs://",
+          "https://nftstorage.link/ipfs/"
+        );
+        let tokenId = parseInt(token.id.tokenId, 16);
+        tokenIds.push({
+          tokenId: tokenId,
+          imageUri: imageUri,
+        });
       });
 
-      tokens.forEach((token) => {
-        if (token.from === address) {
-          tokenId.splice(tokenId.indexOf(token.tokenID), 1);
-        }
-      });
-
-      return tokenId;
+      return tokenIds;
     })
     .catch((err) => {
       console.log(err);
@@ -183,7 +197,7 @@ app.post("/burned", async (req, res) => {
     return;
   }
 
-  let burned = await getBurned(address);
+  let burned = await getBurnedAlchemy(address);
 
   res.status(200).json(burned);
 });
@@ -208,104 +222,56 @@ app.post("/owned", async (req, res) => {
   console.log(`Fetching image urls for ${address}`);
 
   // Get owned OG tokens
-  let tokens = await getOwnedTokens(address.toLowerCase(), testAddress);
+  let ogTokens = await getOwnedTokensAlchemy(
+    address.toLowerCase(),
+    testAddress
+  );
+  // Get redeemed tokens
+  let redeemedTokens = await getOwnedTokensAlchemy(
+    address.toLowerCase(),
+    newAddress
+  );
+  // Get burned OG tokens
+  let burnedTokens = await getBurnedAlchemy(address.toLowerCase(), testAddress);
 
-  if (!tokens) {
+  console.log(`OG Images fetched for ${address}`);
+
+  // Check if wallet has 90s Kids Tokens
+  if (!ogTokens) {
     res.status(500).json({ message: "Could not get owned tokens" });
     return;
   }
 
-  if (tokens === -1) {
-      res.status(500).json({ message: "Server is under heavy load, check back later." });
-      return;
-  }
-
-  if (EARLY_ACCESS == 1 && tokens.length < 50) {
-    res.status(500).json({ message: "Only SOTY members get early access" });
-    return;
-  }
-
-  // Get owned redeemed tokens
-  /// let ownedNewTokens = await getOwnedTokens(address.toLowerCase(), newAddress);
-
-  let burned = await getBurned(address.toLowerCase());
-
-  let isSoty = tokens.length >= 50;
-
-  /*  if (isSoty && ownedNewTokens >= 2) {
-    console.log('soty redeemed');
-  } else if (!isSoty && ownedNewTokens >= 1) {
-    console.log('redeemed');
-  }*/
-
-  /*  if (tokens.length < 50 && burned.length > 1) {
-    res.status(500).json({ message: "Tokens already redeemed" });
-    return;
-  } else if (tokens.length >= 50 && burned.length > 2) {
-    res.status(500).json({ message: "Tokens already redeemed" });
-    return;
-  }*/
-
-  //let provider = new ethers.providers.EtherscanProvider(ETHER_NETWORK, API_KEY);
-  let provider = ethers.getDefaultProvider(ETHER_NETWORK, {
-        alchemy: ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST,
-        etherscan: API_KEY,
-        pocket: { applicationId : '90skids', applicationSecretKey : POCKET_KEY},
-        quorum: 1
-  });
-  const contract = new ethers.Contract(testAddress, testAbi, provider);
-
-  let imageUris = tokens.map(async (token) => {
-    let uri = await contract.tokenURI(token).catch(err => {
-        console.log(err);
-    });
-
-    if (!uri) {
-        return {};
-    }
-
-    uri = uri.replace("ipfs://", "https://nftstorage.link/ipfs/");
-    let imageUri;
-    let response = await axios
-      .get(uri, {
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      })
-      .then((response) => {
-        let responseData = response.data;
-        imageUri = responseData.image.replace(
-          "ipfs://",
-          "https://nftstorage.link/ipfs/"
-        );
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
-    return {
-      tokenId: token,
-      imageUri: imageUri,
-    };
-  });
-
-  if (!imageUris) {
-    res.status(500).json({ message: "Could not get owned tokens." });
-    return;
-  }
-
-  if (imageUris.length == 0) {
+  if (ogTokens.length == 0) {
     res.status(500).json({ message: "You have no owned tokens." });
     return;
   }
 
-  let responseUris = await Promise.all(imageUris);
-  console.log(`Images fetched for ${address}`);
-  if (responseUris) {
-    res.status(200).json(responseUris);
+  // Check if wallet can participate in early access
+  if (EARLY_ACCESS == 1 && ogTokens.length < 50) {
+    res.status(500).json({ message: "Only SOTY members get early access" });
+    return;
+  }
+
+  // Check if already redeemed
+  if (ogTokens.length >= 50 && redeemedTokens >= 2) {
+    res.status(500).json({ message: "You have already redeemed your tokens." });
+    return;
+  } else if (ogTokens.length < 50 && redeemedTokens >= 1) {
+    res.status(500).json({ message: "You have already redeemed your tokens." });
+    return;
+  }
+
+  // Check if burned but not Redeemed
+  if (burnedTokens.length != redeemedTokens.length) {
+    res.status(200).json({
+      tokens: ogTokens,
+      numToMint: burnedTokens.length - redeemedTokens.length,
+      burnedHashes: burnedTokens,
+    });
+    return;
   } else {
-    res.status(500).json({ message: "Could not get owned tokens" });
+    res.status(200).json({ tokens: ogTokens });
   }
 });
 
