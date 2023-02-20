@@ -33,10 +33,13 @@ const style = {
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: "80%",
-  height: "50%",
+  /* width: "80%",
+  height: "50%",*/
+
   backgroundColor: "black",
   textAlign: "center",
+  alignItems: "center",
+  justifyContent: "center",
   color: "lightgray",
   outline: 0,
   borderRadius: "10px",
@@ -439,7 +442,7 @@ class Mint extends React.Component {
 
   renderBurningTokens() {
     return (
-      <div style={{ marginTop: "10%" }}>
+      <div style={{ margin: "50px" }}>
         <ScaleLoader color="#FF7044" />
         <div>Burning Tokens</div>
       </div>
@@ -447,18 +450,18 @@ class Mint extends React.Component {
   }
 
   renderFailed() {
-    const { failedMessage } = this.state
-      return (
-        <div style={{ marginTop: "10%" }}>
-                    <img src={keys} style={{ width: "200px" }} />
-                                      <div>{failedMessage}</div>
-        </div>
-      );
+    const { failedMessage } = this.state;
+    return (
+      <div style={{ margin: "50px" }}>
+        <img src={keys} style={{ width: "200px" }} />
+        <div>{failedMessage}</div>
+      </div>
+    );
   }
 
   renderMintingTokens() {
     return (
-      <div style={{ marginTop: "10%" }}>
+      <div style={{ margin: "50px" }}>
         <ScaleLoader color="#FF7044" />
         <div>Minting Tokens</div>
       </div>
@@ -467,22 +470,36 @@ class Mint extends React.Component {
 
   renderSuccess() {
     const { mintHashes, burnHashes } = this.state;
-    console.log(mintHashes);
-    console.log(burnHashes);
     return (
-      <div style={{ marginTop: "10%" }}>
-        <h1>You have successfully redeemed your token(s)</h1>
-        <h3>Burned Token Transaction(s)</h3>
+      <div style={{ margin: "50px" }}>
+        <h2>You have successfully redeemed your token(s)</h2>
+        <h4>Burned Token Transaction(s)</h4>
         <div>
-          {burnHashes.map((burnHash) => {
-            <div>{burnHash}</div>;
-          })}
+          {burnHashes.map((burnHash) => (
+            <div>
+              <a
+                style={{ color: "#FF7044", cursor: "pointer" }}
+                href={burnHash}
+                target="_blank"
+              >
+                etherscan
+              </a>
+            </div>
+          ))}
         </div>
-        <h3>Minted Token Transaction(s)</h3>
+        <h4>Minted Token Transaction(s)</h4>
         <div>
-          {mintHashes.map((mintHash) => {
-            <div>{mintHash}</div>;
-          })}
+          {mintHashes.map((mintHash) => (
+            <div>
+              <a
+                style={{ color: "#FF7044", cursor: "pointer" }}
+                href={mintHash}
+                target="_blank"
+              >
+                etherscan
+              </a>
+            </div>
+          ))}
         </div>
       </div>
     );

@@ -121,11 +121,11 @@ const getBurned = async (address) => {
     });
 };
 
-const getOwnedTokens = async (address) => {
+const getOwnedTokens = async (address, contractAddress) => {
   let network = ETHER_NETWORK === "mainnet" ? "" : `-${ETHER_NETWORK}`;
   return axios
     .get(
-      `https://api${network}.etherscan.io/api?module=account&action=tokennfttx&contractaddress=${testAddress}&address=${address}&page=1&offset=100&startblock=0&endblock=27025780&sort=asc&apikey=${API_KEY}`
+      `https://api${network}.etherscan.io/api?module=account&action=tokennfttx&contractaddress=${contractAddress}&address=${address}&page=1&offset=100&startblock=0&endblock=27025780&sort=asc&apikey=${API_KEY}`
     )
     .then((response) => {
       let responseData = response.data;
@@ -194,7 +194,8 @@ app.post("/owned", async (req, res) => {
 
   console.log(`Fetching image urls for ${address}`);
 
-  let tokens = await getOwnedTokens(address.toLowerCase());
+  // Get owned OG tokens
+  let tokens = await getOwnedTokens(address.toLowerCase(), testAddress);
 
   if (!tokens) {
     res.status(500).json({ message: "Could not get owned tokens" });
@@ -206,7 +207,19 @@ app.post("/owned", async (req, res) => {
     return;
   }
 
+  // Get owned redeemed tokens
+  let ownedNewTokens = await getOwnedTokens(address.toLowerCase(), newAddress);
+
   let burned = await getBurned(address.toLowerCase());
+
+  let isSoty = tokens.length >= 50;
+
+  /*  if (isSoty && ownedNewTokens >= 2) {
+    console.log('soty redeemed');
+  } else if (!isSoty && ownedNewTokens >= 1) {
+    console.log('redeemed');
+  }*/
+
   /*  if (tokens.length < 50 && burned.length > 1) {
     res.status(500).json({ message: "Tokens already redeemed" });
     return;
@@ -235,6 +248,9 @@ app.post("/owned", async (req, res) => {
           "ipfs://",
           "https://nftstorage.link/ipfs/"
         );
+      })
+      .catch((err) => {
+        console.log(err);
       });
 
     return {
@@ -263,4 +279,4 @@ app.post("/owned", async (req, res) => {
 });
 
 app.get("*", (req, res) => res.sendFile(path.resolve("build", "index.html")));
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`90s kids listening on port ${port}!`));

@@ -21,6 +21,8 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
 
   Counters.Counter private _tokenIdCounter;
 
+  uint256 _maxSupply = 250;
+
   constructor(address systemAddress) ERC721("90s Kids", "90SKIDS") EIP712("90s Kids", "90SKIDS") {
     _systemAddress =  systemAddress;
   }
@@ -34,6 +36,7 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
 
     require(matchSigner(hash, signature), "Mint must be done from 90skidsclub.xyz");
     require(!_usedNonces[nonce], "Hash reused");
+    require(_tokenIdCounter.current() < _maxSupply, "Max supply exceeded");
     require(
       hashTransaction(msg.sender, uri, nonce) == hash,
       "Hash failed"
@@ -78,5 +81,15 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
 
   function totalSupply() public view returns (uint) {
     return _tokenIdCounter.current();
+  }
+
+  function maxSupply() public view returns (uint256) {
+    return _maxSupply;
+  }
+
+  function setMaxSupply(uint256 newMaxSupply) external onlyOwner {
+    require(newMaxSupply < 2**64 - 1, "Max Supply is too large,");
+
+    _maxSupply = newMaxSupply;
   }
 }
