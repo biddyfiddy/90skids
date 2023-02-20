@@ -254,10 +254,10 @@ app.post("/owned", async (req, res) => {
   }
 
   // Check if already redeemed
-  if (ogTokens.length >= 50 && redeemedTokens >= 2) {
+  if (ogTokens.length >= 50 && redeemedTokens.length >= 2) {
     res.status(500).json({ message: "You have already redeemed your tokens." });
     return;
-  } else if (ogTokens.length < 50 && redeemedTokens >= 1) {
+  } else if (ogTokens.length < 50 && redeemedTokens.length >= 1) {
     res.status(500).json({ message: "You have already redeemed your tokens." });
     return;
   }
