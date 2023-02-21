@@ -8,7 +8,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 const NULL_ADDRESS = "0x000000000000000000000000000000000000dead";
-
+const TESTING = process.env.TESTING;
 const EARLY_ACCESS = process.env.EARLY_ACCESS;
 const ETHER_NETWORK = process.env.ETHER_NETWORK;
 const API_KEY = process.env.API_KEY;
@@ -45,11 +45,11 @@ const generateNonce = () => {
   return crypto.randomBytes(16).toString("hex");
 };
 
-const mintMsgHash = (recipient, uri, newNonce, contract) => {
+const mintMsgHash = (recipient, amount, newNonce, contract) => {
   return (
     web3Instance.utils.soliditySha3(
       { t: "address", v: recipient },
-      { t: "string", v: uri },
+      { t: "uint256", v: amount },
       { t: "string", v: newNonce },
       { t: "address", v: contract }
     ) || ""
@@ -60,15 +60,15 @@ const signMessage = (msgHash, privateKey) => {
   return web3Instance.eth.accounts.sign(msgHash, privateKey);
 };
 
-const signing = (address, uri) => {
+const signing = (address, amount) => {
   const newNonce = generateNonce();
 
-  const hash = mintMsgHash(address, uri, newNonce, newAddress);
+  const hash = mintMsgHash(address, amount, newNonce, newAddress);
 
   const signner = signMessage(hash, WALLET_KEY);
 
   return {
-    uri: uri,
+    amount: amount,
     nonce: newNonce,
     hash: signner.message,
     signature: signner.signature,
@@ -77,24 +77,34 @@ const signing = (address, uri) => {
 
 app.post("/mint", async (req, res) => {
   const body = req.body;
-  if (!body) {
+  if (!body || !body.address || !body.amount) {
     res.status(500).json({
-      message: "No post body",
+      message: "Bad post body",
     });
     return;
   }
 
   const address = body.address.toLowerCase();
-  if (!address) {
-    res.status(500).json({
-      message: "No Address in post body",
-    });
-    return;
-  }
+  const amount = body.amount;
 
-  let uri = "ipfs://QmP4mykhP5HZ45H5qtLLWBZVbnVaakQripoX7m5dKKS9pF/2396";
+  // Get owned OG tokens
+  let ogTokens = await getOwnedTokensAlchemy(
+    address.toLowerCase(),
+    testAddress
+  );
+  // Get redeemed tokens
+  let redeemedTokens = await getOwnedTokensAlchemy(
+    address.toLowerCase(),
+    newAddress
+  );
+  // Get burned OG tokens
+  let burnedTokens = await getBurnedAlchemy(address.toLowerCase(), testAddress);
 
-  let sign = signing(address, uri);
+  // mint if:
+  // is soty and burned != redeemed
+  // is soty and burned == 1 and redeemed == 0
+
+  let sign = signing(address, amount);
   res.status(200).json(sign);
 });
 
@@ -128,13 +138,31 @@ const getBurnedAlchemy = async (address, contractAddress) => {
         return [];
       }
       return transfers.map((transfer) => {
-        //return parseInt(transfer.tokenId, 16);
         return transfer.hash;
       });
     })
     .catch(function (error) {
       console.error(error);
     });
+};
+
+const nonSotyCanMint = (ogTokens) => {
+  let coffeeCup = 0;
+  let vx = 0;
+  let keyset = 0;
+  let trafficCone = 0;
+  ogTokens.map((token) => {
+    if (token.type === "Coffee Cup") {
+      coffeeCup++;
+    } else if (token.type === "VX") {
+      vx++;
+    } else if (token.type === "Keyset") {
+      keyset++;
+    } else if (token.type === "Traffic Cone") {
+      trafficCone++;
+    }
+  });
+  return coffeeCup > 0 && vx > 0 && keyset > 0 && trafficCone > 0;
 };
 
 const getOwnedTokensAlchemy = async (address, contractAddress) => {
@@ -161,6 +189,16 @@ const getOwnedTokensAlchemy = async (address, contractAddress) => {
         return tokenIds;
       }
       tokens.forEach((token) => {
+        let attributes = token.metadata.attributes;
+        let type;
+        if (attributes) {
+          attributes.forEach((attribute) => {
+            if (attribute.trait_type === "Type") {
+              type = attribute.value;
+            }
+          });
+        }
+
         let imageUriRaw = token.metadata.image;
         let imageUri = imageUriRaw.replace(
           "ipfs://",
@@ -170,6 +208,7 @@ const getOwnedTokensAlchemy = async (address, contractAddress) => {
         tokenIds.push({
           tokenId: tokenId,
           imageUri: imageUri,
+          type: type,
         });
       });
 
@@ -179,28 +218,6 @@ const getOwnedTokensAlchemy = async (address, contractAddress) => {
       console.log(err);
     });
 };
-
-app.post("/burned", async (req, res) => {
-  const body = req.body;
-  if (!body) {
-    res.status(500).json({
-      message: "No post body",
-    });
-    return;
-  }
-
-  const address = body.address.toLowerCase();
-  if (!address) {
-    res.status(500).json({
-      message: "No Address in post body",
-    });
-    return;
-  }
-
-  let burned = await getBurnedAlchemy(address);
-
-  res.status(200).json(burned);
-});
 
 app.post("/owned", async (req, res) => {
   const body = req.body;
@@ -247,31 +264,65 @@ app.post("/owned", async (req, res) => {
     return;
   }
 
-  // Check if wallet can participate in early access
-  if (EARLY_ACCESS == 1 && ogTokens.length < 50) {
-    res.status(500).json({ message: "Only SOTY members get early access" });
-    return;
-  }
-
-  // Check if already redeemed
-  if (ogTokens.length >= 50 && redeemedTokens.length >= 2) {
-    res.status(500).json({ message: "You have already redeemed your tokens." });
-    return;
-  } else if (ogTokens.length < 50 && redeemedTokens.length >= 1) {
-    res.status(500).json({ message: "You have already redeemed your tokens." });
-    return;
-  }
-
-  // Check if burned but not Redeemed
-  if (burnedTokens.length != redeemedTokens.length) {
+  // If someone burned and couldn't redeem, always resume
+  if (!TESTING && burnedTokens.length != redeemedTokens.length) {
     res.status(200).json({
       tokens: ogTokens,
       numToMint: burnedTokens.length - redeemedTokens.length,
       burnedHashes: burnedTokens,
     });
     return;
-  } else {
-    res.status(200).json({ tokens: ogTokens });
+  }
+
+  /*
+    Early Access:
+        Only SOTY members can burn 2 / claim 2  and redeem special tokens
+    Normal Access:
+        SOTY members can burn 2 / claim 2  and redeem special tokens
+        Non SOTY members can burn 1 / claim 1
+
+  */
+  if (EARLY_ACCESS == 1 && ogTokens.length >= 50) {
+    // Check if already redeemed
+    if (!TESTING && redeemedTokens.length >= 2) {
+      res
+        .status(500)
+        .json({ message: "You have already redeemed your tokens." });
+      return;
+    } else {
+      res.status(200).json({ tokens: ogTokens });
+    }
+  } else if (EARLY_ACCESS == 1 && ogTokens.length < 50) {
+    res.status(500).json({ message: "Only SOTY members get early access" });
+    return;
+  }
+
+  if (EARLY_ACCESS == 0 && ogTokens.length >= 50) {
+    if (!TESTING && redeemedTokens.length >= 2) {
+      res
+        .status(500)
+        .json({ message: "You have already redeemed your tokens." });
+      return;
+    } else {
+      res.status(200).json({ tokens: ogTokens });
+    }
+  } else if (EARLY_ACCESS == 0 && ogTokens.length < 50) {
+    // Check if wallet has all 4 types
+    if (!nonSotyCanMint(ogTokens)) {
+      res.status(500).json({
+        message:
+          "You must have all 4 NFTs types to participate. (VX, Coffee Cup, Keyset, Traffic Cone)",
+      });
+      return;
+      // Check if wallet already redeemed
+    } else if (!TESTING && redeemedTokens.length >= 1) {
+      res
+        .status(500)
+        .json({ message: "You have already redeemed your tokens." });
+      return;
+    } else {
+      res.status(200).json({ tokens: ogTokens });
+    }
   }
 });
 

@@ -9,6 +9,7 @@ import metamask from "./img/metamask.png";
 import check from "./img/check.png";
 import mint from "./img/mint.png";
 import keys from "./img/keys.png";
+import close from "./img/x.png";
 import comingSoon from "./img/coming_soon_fence.png";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import Button from "@mui/material/Button";
@@ -33,6 +34,7 @@ const style = {
   top: "50%",
   left: "50%",
   maxHeight: "500px",
+  maxWidth: "50%",
   overflow: "scroll",
   transform: "translate(-50%, -50%)",
   backgroundColor: "black",
@@ -67,7 +69,7 @@ class Mint extends React.Component {
       selectedNfts: [],
       burnLimit: 1,
       burningTokens: false,
-      mintingTokens: true,
+      mintingTokens: false,
       failedMessage: "",
       mintHashes: [],
       burnHashes: [],
@@ -96,7 +98,18 @@ class Mint extends React.Component {
     }
     this.setState({
       modalOpen: false,
+      imageLoading: false,
+      imageLoadingError: "",
+      images: [],
+      selectedNfts: [],
+      burnLimit: 1,
+      burningTokens: false,
+      mintingTokens: false,
+      failedMessage: "",
+      mintHashes: [],
+      burnHashes: [],
     });
+    this.getTokens();
   }
 
   async burn() {
@@ -154,6 +167,10 @@ class Mint extends React.Component {
       });
     });
 
+    if (!resolvedHashes) {
+      return;
+    }
+
     this.setState({
       burnHashes: resolvedHashes,
     });
@@ -190,49 +207,48 @@ class Mint extends React.Component {
 
     let mintHashes = [];
     try {
-      for (let i = 0; i < numToMint; i++) {
-        const requestOptions = {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            address: accounts[0],
-          }),
-        };
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address: accounts[0],
+          amount: numToMint,
+        }),
+      };
 
-        let response = await fetch("/mint", requestOptions);
+      let response = await fetch("/mint", requestOptions);
 
-        if (!response || response.status !== 200) {
-          let reason = await response.json();
-          continue;
-        }
-
-        let json = await response.json();
-
-        let rawTxn = await contractInstance.populateTransaction.publicMint(
-          json.uri,
-          json.nonce,
-          json.hash,
-          json.signature
-        );
-
-        if (!rawTxn) {
-          continue;
-        }
-
-        let signedTxn = await signer.sendTransaction(rawTxn);
-
-        if (!signedTxn) {
-          return;
-        }
-
-        mintHashes.push(
-          await signedTxn.wait().then((reciept) => {
-            return "https://etherscan.io/tx/" + signedTxn.hash;
-          })
-        );
+      if (!response || response.status !== 200) {
+        let reason = await response.json();
+        return;
       }
+
+      let json = await response.json();
+
+      let rawTxn = await contractInstance.populateTransaction.publicMint(
+        json.amount,
+        json.nonce,
+        json.hash,
+        json.signature
+      );
+
+      if (!rawTxn) {
+        return;
+      }
+
+      let signedTxn = await signer.sendTransaction(rawTxn);
+
+      if (!signedTxn) {
+        return;
+      }
+
+      mintHashes.push(
+        await signedTxn.wait().then((reciept) => {
+          return "https://etherscan.io/tx/" + signedTxn.hash;
+        })
+      );
     } catch (err) {
       this.setState({
         failedMessage: err.message,
@@ -272,7 +288,7 @@ class Mint extends React.Component {
     if (selectedNfts.length < burnLimit && !this.nftIncludes(nftId)) {
       selectedNfts.push(nft);
     } else if (this.nftIncludes(nftId)) {
-      selectedNfts.splice(nft, 1);
+      selectedNfts.splice(selectedNfts.indexOf(nft), 1);
     }
     this.setState({
       selectedNfts,
@@ -478,10 +494,20 @@ class Mint extends React.Component {
   renderFailed() {
     const { failedMessage } = this.state;
     return (
-      <div style={{ margin: "50px" }}>
-        <img src={keys} style={{ width: "200px" }} />
-        <div>{failedMessage}</div>
-      </div>
+      <>
+        <div style={{ textAlign: "end", margin: " 10px" }}>
+          <ColorButton
+            style={{ marginLeft: "10px" }}
+            onClick={this.handleClose}
+          >
+            <img style={{ width: "15px" }} src={close} />
+          </ColorButton>
+        </div>
+        <div style={{ margin: "50px" }}>
+          <img src={keys} style={{ width: "200px" }} />
+          <div>{failedMessage}</div>
+        </div>
+      </>
     );
   }
 
@@ -498,37 +524,55 @@ class Mint extends React.Component {
   renderSuccess() {
     const { mintHashes, burnHashes } = this.state;
     return (
-      <div style={{ margin: "50px" }}>
-        <h2>You have successfully redeemed {mintHashes.length} token(s)</h2>
-        <h4>Burned Token Transaction(s)</h4>
-        <div>
-          {burnHashes.map((burnHash) => (
-            <div>
-              <a
-                style={{ color: "#FF7044", cursor: "pointer" }}
-                href={burnHash}
-                target="_blank"
-              >
-                etherscan
-              </a>
-            </div>
-          ))}
+      <>
+        <div style={{ textAlign: "end", margin: " 10px" }}>
+          <ColorButton
+            style={{ marginLeft: "10px" }}
+            onClick={this.handleClose}
+          >
+            <img style={{ width: "15px" }} src={close} />
+          </ColorButton>
         </div>
-        <h4>Minted Token Transaction(s)</h4>
-        <div>
-          {mintHashes.map((mintHash) => (
-            <div>
-              <a
-                style={{ color: "#FF7044", cursor: "pointer" }}
-                href={mintHash}
-                target="_blank"
-              >
-                etherscan
-              </a>
-            </div>
-          ))}
+        <div style={{ margin: "50px" }}>
+          <h2>
+            You have successfully redeemed {mintHashes.length} token(s)
+            <ColorButton
+              style={{ marginLeft: "10px" }}
+              onClick={this.handleClose}
+            >
+              <img style={{ width: "15px" }} src={close} />
+            </ColorButton>
+          </h2>
+          <h4>Burned Token Transaction(s)</h4>
+          <div>
+            {burnHashes.map((burnHash) => (
+              <div>
+                <a
+                  style={{ color: "#FF7044", cursor: "pointer" }}
+                  href={burnHash}
+                  target="_blank"
+                >
+                  etherscan
+                </a>
+              </div>
+            ))}
+          </div>
+          <h4>Minted Token Transaction(s)</h4>
+          <div>
+            {mintHashes.map((mintHash) => (
+              <div>
+                <a
+                  style={{ color: "#FF7044", cursor: "pointer" }}
+                  href={mintHash}
+                  target="_blank"
+                >
+                  etherscan
+                </a>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
