@@ -13,6 +13,10 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
 
   using Counters for Counters.Counter;
 
+  uint256 private maxBurnSupply = 250;
+
+  uint256 private maxLimitedSupply = 50;
+
   string private _baseTokenURI;
 
   string private _limitedEditionTokenURI;
@@ -40,6 +44,7 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
 
     require(matchSigner(hash, signature), "Mint must be done from 90skidsclub.xyz");
     require(bytes(_baseTokenURI).length > 0, "base uri is not set");
+    require(_currentBaseUriCounter.current() < maxBurnSupply, "Max tokens distributed");
     require(!_usedNonces[nonce], "Hash reused");
     require(
       hashTransaction(msg.sender, amount, nonce) == hash,
@@ -66,6 +71,7 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
     require(matchSigner(hash, signature), "Mint must be done from 90skidsclub.xyz");
     require(bytes(_limitedEditionTokenURI).length > 0, "limited edition uri is not set");
     require(!_usedNonces[nonce], "Hash reused");
+    require(_currentLimitedEditionUriCounter.current() < maxLimitedSupply, "Max tokens distributed");
     require(
       hashTransaction(msg.sender, amount, nonce) == hash,
       "Hash failed"
@@ -114,6 +120,15 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
 
   function totalSupply() public view returns (uint) {
     return _tokenIdCounter.current();
+  }
+
+
+  function getMaxBurnSupply() public view returns (uint256) {
+    return maxBurnSupply;
+  }
+
+  function getMaxLimitedSupply() public view returns (uint256) {
+    return maxLimitedSupply;
   }
 
   // Set a new base uri and reset the counter to 0 for the new IPFS hash

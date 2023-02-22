@@ -8,8 +8,11 @@ import banner from "./img/banner.mp4";
 import metamask from "./img/metamask.png";
 import check from "./img/check.png";
 import mint from "./img/mint.png";
+import redeem from "./img/redeem.png";
+import continued from "./img/continue.png";
 import keys from "./img/keys.png";
 import close from "./img/x.png";
+import cone from "./img/cone.png";
 import comingSoon from "./img/coming_soon_fence.png";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import Button from "@mui/material/Button";
@@ -62,6 +65,10 @@ class Mint extends React.Component {
     super(props);
     this.state = {
       modalOpen: false,
+      redeemMode: false,
+      redeemingMode: false,
+      redeemedMode: false,
+      redeemError: "",
       accounts: undefined,
       imageLoading: false,
       imageLoadingError: "",
@@ -78,8 +85,10 @@ class Mint extends React.Component {
     this.selectNft = this.selectNft.bind(this);
     this.burn = this.burn.bind(this);
     this.handleClose = this.handleClose.bind(this);
+    this.redeem = this.redeem.bind(this);
+    this.redeemed = this.redeemed.bind(this);
 
-    // Render methods
+    // Burn Render Methods
     this.renderMetamaskLogin = this.renderMetamaskLogin.bind(this);
     this.renderImageLoading = this.renderImageLoading.bind(this);
     this.renderImageLoadingError = this.renderImageLoadingError.bind(this);
@@ -88,8 +97,22 @@ class Mint extends React.Component {
     this.renderMintingTokens = this.renderMintingTokens.bind(this);
     this.renderFailed = this.renderFailed.bind(this);
 
+    // Redeem Render Methods
+    this.renderRedeem = this.renderRedeem.bind(this);
+    this.renderRedeeming = this.renderRedeeming.bind(this);
+    this.renderRedeemed = this.renderRedeemed.bind(this);
+    this.renderRedeemError = this.renderRedeemError.bind(this);
+
     // Utility methods
     this.nftIncludes = this.nftIncludes.bind(this);
+  }
+
+  redeemed() {
+    this.setState({
+      redeemMode: false,
+      redeemingMode: false,
+      redeemedMode: false,
+    });
   }
 
   async handleClose(event, reason) {
@@ -180,6 +203,113 @@ class Mint extends React.Component {
     }
   }
 
+  async mintLimitedEdition() {
+    const { accounts } = this.state;
+
+    if (!accounts || accounts.length === 0) {
+      return;
+    }
+
+    this.setState({
+      redeemMode: false,
+      redeemingMode: true,
+    });
+
+    const ethersProvider = new ethers.providers.Web3Provider(
+      window.ethereum,
+      "any"
+    );
+    const signer = ethersProvider.getSigner();
+    let rshoePcontractFactory = new ethers.ContractFactory(
+      newAbi,
+      newByteCode,
+      signer
+    );
+
+    let contractInstance = rshoePcontractFactory.attach(newAddress);
+
+    let mintHashes = [];
+    try {
+      const requestOptions = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          address: accounts[0],
+          amount: 1,
+        }),
+      };
+
+      let response = await fetch("/mintLimitedEdition", requestOptions);
+
+      if (!response || response.status !== 200) {
+        let reason = await response.json();
+        this.setState({
+          redeemingMode: false,
+          redeemError: reason.message,
+        });
+        return;
+      }
+
+      let json = await response.json();
+
+      let rawTxn =
+        await contractInstance.populateTransaction.publicLimitedEditionMint(
+          json.amount,
+          json.nonce,
+          json.hash,
+          json.signature
+        );
+
+      if (!rawTxn) {
+        this.setState({
+          redeemingMode: false,
+        });
+        return;
+      }
+
+      let signedTxn = await signer.sendTransaction(rawTxn);
+
+      if (!signedTxn) {
+        this.setState({
+          redeemingMode: false,
+        });
+        return;
+      }
+
+      mintHashes.push(
+        await signedTxn.wait().then((reciept) => {
+          return "https://etherscan.io/tx/" + signedTxn.hash;
+        })
+      );
+    } catch (err) {
+      let message;
+      if (err.error) {
+        message = err.error.message;
+      } else {
+        message = err.message;
+      }
+
+      this.setState({
+        redeemingMode: false,
+        redeemError: message,
+      });
+    }
+
+    let resolvedHashes = await Promise.all(mintHashes).catch((err) => {
+      this.setState({
+        redeemingMode: false,
+      });
+    });
+
+    this.setState({
+      redeemedHash: resolvedHashes,
+      redeemingMode: false,
+      redeemedMode: true,
+    });
+  }
+
   async mint(numToMint) {
     const { accounts } = this.state;
 
@@ -188,6 +318,7 @@ class Mint extends React.Component {
     }
 
     this.setState({
+      numToMint: numToMint,
       burningTokens: false,
       mintingTokens: true,
     });
@@ -301,7 +432,11 @@ class Mint extends React.Component {
     this.setState({
       accounts: accounts,
     });
-    this.getTokens();
+    await this.getTokens();
+  }
+
+  async redeem() {
+    await this.mintLimitedEdition();
   }
 
   async componentDidMount() {
@@ -348,6 +483,7 @@ class Mint extends React.Component {
 
     if (response.status != 200) {
       this.setState({
+        redeemMode: false,
         imageLoading: false,
         imageLoadingError: json.message,
       });
@@ -359,6 +495,7 @@ class Mint extends React.Component {
         burnLimit: tokens.length >= 50 ? 2 : 1,
         modalOpen: true,
         mintingTokens: true,
+        redeemMode: false,
         burnHashes: json.burnedHashes,
       });
       this.mint(json.numToMint);
@@ -367,9 +504,76 @@ class Mint extends React.Component {
         imageLoading: false,
         imageLoadingError: "",
         images: tokens,
+        redeemMode: !json.redeemed,
         burnLimit: tokens.length >= 50 ? 2 : 1,
       });
     }
+  }
+
+  renderRedeemError() {
+    const { redeemError } = this.state;
+    return (
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <div style={{ maxWidth: "300px" }}>
+          <img src={keys} style={{ width: "200px" }} />
+          <div>{redeemError}</div>
+        </div>
+      </div>
+    );
+  }
+
+  renderRedeemed() {
+    const { redeemedHash } = this.state;
+    return (
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <div style={{ maxWidth: "300px", textAlign: "center" }}>
+          <img src={cone} style={{ width: "200px" }} />
+          <div>You have redeemed your limited edition NFT</div>
+          {redeemedHash.map((redeemHash) => (
+            <div style={{ marginTop: "10px", marginBottom: "10px" }}>
+              <a
+                style={{ color: "#FF7044", cursor: "pointer" }}
+                href={redeemHash}
+                target="_blank"
+              >
+                view on etherscan
+              </a>
+            </div>
+          ))}
+          <ColorButton onClick={this.redeemed}>
+            <img src={continued} style={{ width: "100px" }} />
+          </ColorButton>
+        </div>
+      </div>
+    );
+  }
+
+  renderRedeeming() {
+    return (
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <div style={{ maxWidth: "300px", textAlign: "center" }}>
+          <ScaleLoader color="#FF7044" />
+          <div>Redeeming limited edition NFT</div>
+        </div>
+      </div>
+    );
+  }
+
+  renderRedeem() {
+    return (
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <div style={{ maxWidth: "300px", textAlign: "center" }}>
+          <img src={cone} style={{ width: "200px" }} />
+          <div style={{ marginTop: "10px", marginBottom: "10px" }}>
+            You hold 50 or more 90's Kids NFTs and are eligible to redeem a
+            Limited Edition NFT.
+          </div>
+          <ColorButton onClick={this.redeem}>
+            <img src={redeem} style={{ width: "100px" }} />
+          </ColorButton>
+        </div>
+      </div>
+    );
   }
 
   renderImageLoading() {
@@ -512,11 +716,11 @@ class Mint extends React.Component {
   }
 
   renderMintingTokens() {
-    const { selectedNfts } = this.state;
+    const { numToMint } = this.state;
     return (
       <div style={{ margin: "50px" }}>
         <ScaleLoader color="#FF7044" />
-        <div>Minting {selectedNfts.length} Token(s)</div>
+        <div>Minting {numToMint} Token(s)</div>
       </div>
     );
   }
@@ -534,15 +738,7 @@ class Mint extends React.Component {
           </ColorButton>
         </div>
         <div style={{ margin: "50px" }}>
-          <h2>
-            You have successfully redeemed {mintHashes.length} token(s)
-            <ColorButton
-              style={{ marginLeft: "10px" }}
-              onClick={this.handleClose}
-            >
-              <img style={{ width: "15px" }} src={close} />
-            </ColorButton>
-          </h2>
+          <h2>You have successfully redeemed {mintHashes.length} token(s)</h2>
           <h4>Burned Token Transaction(s)</h4>
           <div>
             {burnHashes.map((burnHash) => (
@@ -590,6 +786,10 @@ class Mint extends React.Component {
       failedMessage,
       burnHashes,
       mintHashes,
+      redeemMode,
+      redeemingMode,
+      redeemedMode,
+      redeemError,
     } = this.state;
 
     return (
@@ -635,16 +835,25 @@ class Mint extends React.Component {
         ) : (
           <></>
         )}
-
         {imageLoading ? this.renderImageLoading() : <></>}
-
+        {redeemMode ? this.renderRedeem() : <></>}
+        {redeemingMode ? this.renderRedeeming() : <></>}
+        {redeemError !== "" ? this.renderRedeemError() : <></>}
+        {redeemedMode ? this.renderRedeemed() : <></>}
         {!imageLoading && imageLoadingError != "" ? (
           this.renderImageLoadingError()
         ) : (
           <></>
         )}
-
-        {images.length > 0 ? this.renderImages() : <></>}
+        {!redeemMode &&
+        !redeemingMode &&
+        !redeemedMode &&
+        redeemError === "" &&
+        images.length > 0 ? (
+          this.renderImages()
+        ) : (
+          <></>
+        )}
 
         <div style={{ textAlign: "center", marginTop: "500px" }}>
           90s kids © 2023
