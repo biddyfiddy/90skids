@@ -20,12 +20,6 @@ const INFURA_KEY = process.env.INFURA_KEY;
 const POCKET_KEY = process.env.POCKET_KEY;
 
 const {
-  abi: ogAbi,
-  bytecode: ogByteCode,
-  address: ogAddress,
-} = require("./src/abi/og_contract.json");
-
-const {
   abi: testAbi,
   bytecode: testByteCode,
   address: testAddress,
@@ -40,42 +34,7 @@ const {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "build")));
 
-const web3Instance = new web3(process.env.MAINNET_RPC_URL);
-
-const generateNonce = () => {
-  return crypto.randomBytes(16).toString("hex");
-};
-
-const mintMsgHash = (recipient, amount, newNonce, contract) => {
-  return (
-    web3Instance.utils.soliditySha3(
-      { t: "address", v: recipient },
-      { t: "uint256", v: amount },
-      { t: "string", v: newNonce },
-      { t: "address", v: contract }
-    ) || ""
-  );
-};
-
-const signMessage = (msgHash, privateKey) => {
-  return web3Instance.eth.accounts.sign(msgHash, privateKey);
-};
-
-const signing = (address, amount) => {
-  const newNonce = generateNonce();
-
-  const hash = mintMsgHash(address, amount, newNonce, newAddress);
-
-  const signer = signMessage(hash, WALLET_KEY);
-
-  return {
-    amount: amount,
-    nonce: newNonce,
-    hash: signer.message,
-    signature: signer.signature,
-  };
-};
-
+/* ======================= ENDPOINTS ======================= */
 app.post("/mintLimitedEdition", async (req, res) => {
   const body = req.body;
   if (!body || !body.address || !body.amount) {
@@ -97,10 +56,7 @@ app.post("/mintLimitedEdition", async (req, res) => {
   }
 
   // Get owned OG tokens
-  let ogTokens = await getOwnedTokensAlchemy(
-    address.toLowerCase(),
-    testAddress
-  );
+  let ogTokens = await getOwnedTokensOG(address.toLowerCase(), testAddress);
 
   // Get redeemed status
   let redeemed = await getLimitedEditionMintedAlchemy(
@@ -137,17 +93,17 @@ app.post("/mint", async (req, res) => {
   const amount = body.amount;
 
   // Get owned OG tokens
-  let ogTokens = await getOwnedTokensAlchemy(
-    address.toLowerCase(),
-    testAddress
-  );
+  let ogTokens = await getOwnedTokensOG(address.toLowerCase(), testAddress);
   // Get redeemed tokens
-  let redeemedTokens = await getOwnedTokensAlchemy(
+  let redeemedTokens = await getOwnedTokensNewContract(
     address.toLowerCase(),
     newAddress
   );
   // Get burned OG tokens
-  let burnedTokens = await getBurnedAlchemy(address.toLowerCase(), testAddress);
+  let burnedTokens = await getNumberOfTokensBurned(
+    address.toLowerCase(),
+    testAddress
+  );
 
   // Check if already redeemed
   if (ogTokens.length >= 50 && redeemedTokens.length >= 2) {
@@ -160,7 +116,8 @@ app.post("/mint", async (req, res) => {
   res.status(200).json(sign);
 });
 
-const getBurnedAlchemy = async (address, contractAddress) => {
+/* ======================= API CALLS ======================= */
+const getNumberOfTokensBurned = async (address, contractAddress) => {
   let alchemyKey = ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST;
   const options = {
     method: "POST",
@@ -189,6 +146,44 @@ const getBurnedAlchemy = async (address, contractAddress) => {
         return [];
       }
       return transfers.map((transfer) => {
+        return transfer.hash;
+      });
+    })
+    .catch(function (error) {
+      console.error(error);
+    });
+};
+
+const getTransferredAlchemy = async (address, contractAddress) => {
+  let alchemyKey = ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST;
+  const options = {
+    method: "POST",
+    url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/v2/${alchemyKey}`,
+    headers: { accept: "application/json", "content-type": "application/json" },
+    data: {
+      id: 1,
+      jsonrpc: "2.0",
+      method: "alchemy_getAssetTransfers",
+      params: [
+        {
+          fromAddress: "0x0000000000000000000000000000000000000000",
+          contractAddresses: [contractAddress],
+          toAddress: address,
+          category: ["erc721"],
+          withMetadata: true,
+        },
+      ],
+    },
+  };
+  return await axios
+    .request(options)
+    .then(function (response) {
+      let transfers = response.data.result.transfers;
+      if (!transfers) {
+        return [];
+      }
+      return transfers.map((transfer) => {
+        console.log(transfer);
         return transfer.hash;
       });
     })
@@ -259,7 +254,7 @@ const nonSotyCanMint = (ogTokens) => {
   return coffeeCup > 0 && vx > 0 && keyset > 0 && trafficCone > 0;
 };
 
-const getOwnedTokensAlchemy = async (address, contractAddress) => {
+const getOwnedTokensOG = async (address, contractAddress) => {
   let alchemyKey = ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST;
   const options = {
     method: "GET",
@@ -271,7 +266,6 @@ const getOwnedTokensAlchemy = async (address, contractAddress) => {
     },
     headers: { accept: "application/json" },
   };
-
   return axios
     .request(options)
     .then((response) => {
@@ -295,12 +289,11 @@ const getOwnedTokensAlchemy = async (address, contractAddress) => {
         }
 
         let imageUri = token.metadata.image;
-        if (type !== "1/1" && imageUri) {
+        if (imageUri) {
           imageUri = imageUri.replace(
             "ipfs://",
             "https://nftstorage.link/ipfs/"
           );
-
           let tokenId = parseInt(token.id.tokenId, 16);
           tokenIds.push({
             tokenId: tokenId,
@@ -309,7 +302,53 @@ const getOwnedTokensAlchemy = async (address, contractAddress) => {
           });
         }
       });
+      return tokenIds;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 
+const getOwnedTokensNewContract = async (address, contractAddress) => {
+  let alchemyKey = ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST;
+  const options = {
+    method: "GET",
+    url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/nft/v2/${alchemyKey}/getNFTs`,
+    params: {
+      owner: address,
+      contractAddresses: [contractAddress],
+      withMetadata: "true",
+    },
+    headers: { accept: "application/json" },
+  };
+  return axios
+    .request(options)
+    .then((response) => {
+      let responseData = response.data;
+      let tokens = responseData.ownedNfts;
+
+      let tokenIds = [];
+      if (!tokens || tokens.length == 0) {
+        console.log("No tokens found.");
+        return tokenIds;
+      }
+      tokens.forEach((token) => {
+        console.log(token);
+        if (token.metadata && token.metadata.attributes) {
+          let isLimitedEdition = false;
+          token.metadata.attributes.forEach((attribute) => {
+            if (attribute.trait_type === "Type" && attribute.value === "1/1") {
+              isLimitedEdition = true;
+            }
+          });
+          if (!isLimitedEdition) {
+            let tokenId = parseInt(token.id.tokenId, 16);
+            tokenIds.push({
+              tokenId: tokenId,
+            });
+          }
+        }
+      });
       return tokenIds;
     })
     .catch((err) => {
@@ -337,18 +376,19 @@ app.post("/owned", async (req, res) => {
   console.log(`Fetching image urls for ${address}`);
 
   // Get owned OG tokens
-  let ogTokens = await getOwnedTokensAlchemy(
-    address.toLowerCase(),
-    testAddress
-  );
+  let ogTokens = await getOwnedTokensOG(address.toLowerCase(), testAddress);
+
   // Get redeemed tokens
-  let redeemedTokens = await getOwnedTokensAlchemy(
+  let redeemedTokens = await getOwnedTokensNewContract(
     address.toLowerCase(),
     newAddress
   );
 
   // Get burned OG tokens
-  let burnedTokens = await getBurnedAlchemy(address.toLowerCase(), testAddress);
+  let burnedTokens = await getNumberOfTokensBurned(
+    address.toLowerCase(),
+    testAddress
+  );
 
   // Get redeemed status
   let redeemed = await getLimitedEditionMintedAlchemy(
@@ -369,11 +409,21 @@ app.post("/owned", async (req, res) => {
     return;
   }
 
-  // If someone burned and couldn't redeem, always resume
-  if (TESTING == 0 && burnedTokens.length != redeemedTokens.length) {
+  console.log(burnedTokens);
+  console.log(redeemedTokens);
+
+  // If someone burned and didn't redeem, always resume
+  if (TESTING == 0 && ogTokens.length >= 50 && (burnedTokens.length == 2 || burnedTokens.length == 1) && redeemedTokens.length < 2) {
     res.status(200).json({
       tokens: ogTokens,
-      numToMint: burnedTokens.length - redeemedTokens.length,
+      numToMint: 2 - redeemedTokens.length,
+      burnedHashes: burnedTokens,
+    });
+    return;
+  } else if (TESTING == 0 && ogTokens.length < 50 && burnedTokens.length == 1 && redeemedTokens.length < 1) {
+    res.status(200).json({
+      tokens: ogTokens,
+      numToMint: 1,
       burnedHashes: burnedTokens,
     });
     return;
@@ -430,6 +480,42 @@ app.post("/owned", async (req, res) => {
     }
   }
 });
+
+const web3Instance = new web3(process.env.MAINNET_RPC_URL);
+
+const generateNonce = () => {
+  return crypto.randomBytes(16).toString("hex");
+};
+
+const mintMsgHash = (recipient, amount, newNonce, contract) => {
+  return (
+    web3Instance.utils.soliditySha3(
+      { t: "address", v: recipient },
+      { t: "uint256", v: amount },
+      { t: "string", v: newNonce },
+      { t: "address", v: contract }
+    ) || ""
+  );
+};
+
+const signMessage = (msgHash, privateKey) => {
+  return web3Instance.eth.accounts.sign(msgHash, privateKey);
+};
+
+const signing = (address, amount) => {
+  const newNonce = generateNonce();
+
+  const hash = mintMsgHash(address, amount, newNonce, newAddress);
+
+  const signer = signMessage(hash, WALLET_KEY);
+
+  return {
+    amount: amount,
+    nonce: newNonce,
+    hash: signer.message,
+    signature: signer.signature,
+  };
+};
 
 app.get("*", (req, res) => res.sendFile(path.resolve("build", "index.html")));
 app.listen(port, () => console.log(`90s kids listening on port ${port}!`));

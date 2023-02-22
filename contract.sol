@@ -23,7 +23,15 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
 
   address private _systemAddress;
 
-  mapping(string => bool) public _usedNonces;
+  mapping(string => bool) private _usedNonces;
+
+  mapping(bytes32 => bool) private _redeemedLimitedEditionAddresses;
+
+  mapping(bytes32 => bool) private _redeemedBurnAddresses;
+
+  uint32 currentLimitedEditionMappingVersion;
+
+  uint32 currentBurnedMappingVersion;
 
   Counters.Counter private _tokenIdCounter;
 
@@ -41,10 +49,11 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
     bytes32 hash,
     bytes memory signature
   ) external payable {
-
+    bytes32 key = keccak256(abi.encodePacked(currentBurnedMappingVersion, msg.sender));
     require(matchSigner(hash, signature), "Mint must be done from 90skidsclub.xyz");
     require(bytes(_baseTokenURI).length > 0, "base uri is not set");
     require(_currentBaseUriCounter.current() < maxBurnSupply, "Max tokens distributed");
+    require(!_redeemedBurnAddresses[key], "Already redeemed");
     require(!_usedNonces[nonce], "Hash reused");
     require(
       hashTransaction(msg.sender, amount, nonce) == hash,
@@ -56,6 +65,7 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
     for (uint256 i = 1; i <= amount; i++) {
       _safeMint(msg.sender, _tokenIdCounter.current());
       _setTokenURI(_tokenIdCounter.current(), append(_baseTokenURI, _currentBaseUriCounter.current()));
+      _redeemedBurnAddresses[key] = true;
       _tokenIdCounter.increment();
       _currentBaseUriCounter.increment();
     }
@@ -67,9 +77,10 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
     bytes32 hash,
     bytes memory signature
   ) external payable {
-
+    bytes32 key = keccak256(abi.encodePacked(currentLimitedEditionMappingVersion, msg.sender));
     require(matchSigner(hash, signature), "Mint must be done from 90skidsclub.xyz");
     require(bytes(_limitedEditionTokenURI).length > 0, "limited edition uri is not set");
+    require(!_redeemedLimitedEditionAddresses[key], "Already redeemed");
     require(!_usedNonces[nonce], "Hash reused");
     require(_currentLimitedEditionUriCounter.current() < maxLimitedSupply, "Max tokens distributed");
     require(
@@ -82,6 +93,7 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
     for (uint256 i = 1; i <= amount; i++) {
       _safeMint(msg.sender, _tokenIdCounter.current());
       _setTokenURI(_tokenIdCounter.current(), append(_limitedEditionTokenURI, _currentLimitedEditionUriCounter.current()));
+      _redeemedLimitedEditionAddresses[key] = true;
       _tokenIdCounter.increment();
       _currentLimitedEditionUriCounter.increment();
     }
@@ -135,6 +147,7 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
   function setBaseUri(string memory uri) external onlyOwner {
     _baseTokenURI = uri;
     _currentBaseUriCounter.reset();
+    currentBurnedMappingVersion++;
   }
 
   function baseUri() public view returns (string memory) {
@@ -145,9 +158,21 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
   function setLimitedEditionTokenURI(string memory uri) external onlyOwner {
     _limitedEditionTokenURI = uri;
     _currentLimitedEditionUriCounter.reset();
+    currentLimitedEditionMappingVersion++;
   }
 
   function limitedEditionTokenURI() public view returns (string memory) {
     return _limitedEditionTokenURI;
   }
+
+  function redeemedLimitedEdition(address wallet) public view returns (bool) {
+        bytes32 key = keccak256(abi.encodePacked(currentLimitedEditionMappingVersion, wallet));
+        return _redeemedLimitedEditionAddresses[key];
+  }
+
+  function redeemedBurned(address wallet) public view returns (bool) {
+        bytes32 key = keccak256(abi.encodePacked(currentBurnedMappingVersion, wallet));
+        return _redeemedBurnAddresses[key];
+  }
+
 }

@@ -112,6 +112,7 @@ class Mint extends React.Component {
       redeemMode: false,
       redeemingMode: false,
       redeemedMode: false,
+      redeemError: "",
     });
   }
 
@@ -327,6 +328,7 @@ class Mint extends React.Component {
       window.ethereum,
       "any"
     );
+
     const signer = ethersProvider.getSigner();
     let rshoePcontractFactory = new ethers.ContractFactory(
       newAbi,
@@ -381,8 +383,15 @@ class Mint extends React.Component {
         })
       );
     } catch (err) {
+          let message;
+          if (err.error) {
+            message = err.error.message;
+          } else {
+            message = err.message;
+          }
+
       this.setState({
-        failedMessage: err.message,
+        failedMessage: message,
         burningTokens: false,
         mintingTokens: false,
       });
@@ -517,6 +526,9 @@ class Mint extends React.Component {
         <div style={{ maxWidth: "300px" }}>
           <img src={keys} style={{ width: "200px" }} />
           <div>{redeemError}</div>
+          <ColorButton onClick={this.redeemed}>
+            <img src={continued} style={{ width: "100px" }} />
+          </ColorButton>
         </div>
       </div>
     );
@@ -839,7 +851,7 @@ class Mint extends React.Component {
         {redeemMode ? this.renderRedeem() : <></>}
         {redeemingMode ? this.renderRedeeming() : <></>}
         {redeemError !== "" ? this.renderRedeemError() : <></>}
-        {redeemedMode ? this.renderRedeemed() : <></>}
+        {redeemError === "" && redeemedMode ? this.renderRedeemed() : <></>}
         {!imageLoading && imageLoadingError != "" ? (
           this.renderImageLoadingError()
         ) : (
