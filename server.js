@@ -146,6 +146,7 @@ const getNumberOfTokensBurned = async (address, contractAddress) => {
         return [];
       }
       return transfers.map((transfer) => {
+      console.log(transfer);
         return transfer.hash;
       });
     })
@@ -183,7 +184,6 @@ const getTransferredAlchemy = async (address, contractAddress) => {
         return [];
       }
       return transfers.map((transfer) => {
-        console.log(transfer);
         return transfer.hash;
       });
     })
@@ -333,7 +333,6 @@ const getOwnedTokensNewContract = async (address, contractAddress) => {
         return tokenIds;
       }
       tokens.forEach((token) => {
-        console.log(token);
         if (token.metadata && token.metadata.attributes) {
           let isLimitedEdition = false;
           token.metadata.attributes.forEach((attribute) => {
@@ -409,9 +408,6 @@ app.post("/owned", async (req, res) => {
     return;
   }
 
-  console.log(burnedTokens);
-  console.log(redeemedTokens);
-
   // If someone burned and didn't redeem, always resume
   if (TESTING == 0 && ogTokens.length >= 50 && (burnedTokens.length == 2 || burnedTokens.length == 1) && redeemedTokens.length < 2) {
     res.status(200).json({
@@ -476,7 +472,7 @@ app.post("/owned", async (req, res) => {
         .json({ message: "You have already redeemed your tokens." });
       return;
     } else {
-      res.status(200).json({ redeemed: false, tokens: ogTokens });
+      res.status(200).json({ tokens: ogTokens });
     }
   }
 });

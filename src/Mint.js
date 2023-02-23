@@ -513,7 +513,7 @@ class Mint extends React.Component {
         imageLoading: false,
         imageLoadingError: "",
         images: tokens,
-        redeemMode: !json.redeemed,
+        redeemMode: !json.redeemed ? false : json.redeemed,
         burnLimit: tokens.length >= 50 ? 2 : 1,
       });
     }
@@ -703,6 +703,7 @@ class Mint extends React.Component {
       <div style={{ margin: "50px" }}>
         <ScaleLoader color="#FF7044" />
         <div>Burning {selectedNfts.length} Token(s)</div>
+        <div>Please do not navigate away from this page.</div>
       </div>
     );
   }
@@ -733,6 +734,7 @@ class Mint extends React.Component {
       <div style={{ margin: "50px" }}>
         <ScaleLoader color="#FF7044" />
         <div>Minting {numToMint} Token(s)</div>
+        <div>Please do not navigate away from this page.</div>
       </div>
     );
   }

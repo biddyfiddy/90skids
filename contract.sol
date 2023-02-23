@@ -134,9 +134,16 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
     return _tokenIdCounter.current();
   }
 
+  function setMaxBurnSupply(uint256 max) external onlyOwner {
+    maxBurnSupply = max;
+  }
 
   function getMaxBurnSupply() public view returns (uint256) {
     return maxBurnSupply;
+  }
+
+  function setLimitedBurnSupply(uint256 max) external onlyOwner {
+    maxLimitedSupply = max;
   }
 
   function getMaxLimitedSupply() public view returns (uint256) {
