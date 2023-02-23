@@ -158,32 +158,29 @@ class Mint extends React.Component {
     );
 
     const contractInstance = contractFactory.attach(testAddress);
+    let selectedNft = selectedNfts[0];
+    //const hashes = selectedNfts.map(async (selectedNft) => {
+    let rawTxn = await contractInstance.populateTransaction.transferFrom(
+      accounts[0],
+      "0x000000000000000000000000000000000000dead",
+      selectedNft.tokenId
+    );
 
-    const hashes = selectedNfts.map(async (selectedNft) => {
-      let rawTxn = await contractInstance.populateTransaction.transferFrom(
-        accounts[0],
-        "0x000000000000000000000000000000000000dead",
-        selectedNft.tokenId
-      );
+    if (!rawTxn) {
+      return;
+    }
 
-      if (!rawTxn) {
-        return;
-      }
+    let signedTxn = await signer.sendTransaction(rawTxn);
 
-      let signedTxn = await signer.sendTransaction(rawTxn);
+    if (!signedTxn) {
+      return;
+    }
 
-      if (!signedTxn) {
-        return;
-      }
-
-      let hash = await signedTxn.wait().then((reciept) => {
-        return "https://etherscan.io/tx/" + signedTxn.hash;
-      });
-
-      return hash;
+    let hash = await signedTxn.wait().then((reciept) => {
+      return "https://etherscan.io/tx/" + signedTxn.hash;
     });
 
-    let resolvedHashes = await Promise.all(hashes).catch((err) => {
+    let resolvedHashes = await Promise.all([hash]).catch((err) => {
       this.setState({
         failedMessage: err.message,
         burningTokens: false,
@@ -383,12 +380,12 @@ class Mint extends React.Component {
         })
       );
     } catch (err) {
-          let message;
-          if (err.error) {
-            message = err.error.message;
-          } else {
-            message = err.message;
-          }
+      let message;
+      if (err.error) {
+        message = err.error.message;
+      } else {
+        message = err.message;
+      }
 
       this.setState({
         failedMessage: message,

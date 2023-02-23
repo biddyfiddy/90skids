@@ -146,7 +146,7 @@ const getNumberOfTokensBurned = async (address, contractAddress) => {
         return [];
       }
       return transfers.map((transfer) => {
-      console.log(transfer);
+        console.log(transfer);
         return transfer.hash;
       });
     })
@@ -409,14 +409,24 @@ app.post("/owned", async (req, res) => {
   }
 
   // If someone burned and didn't redeem, always resume
-  if (TESTING == 0 && ogTokens.length >= 50 && (burnedTokens.length == 2 || burnedTokens.length == 1) && redeemedTokens.length < 2) {
+  if (
+    TESTING == 0 &&
+    ogTokens.length >= 50 &&
+    (burnedTokens.length == 2 || burnedTokens.length == 1) &&
+    redeemedTokens.length < 2
+  ) {
     res.status(200).json({
       tokens: ogTokens,
       numToMint: 2 - redeemedTokens.length,
       burnedHashes: burnedTokens,
     });
     return;
-  } else if (TESTING == 0 && ogTokens.length < 50 && burnedTokens.length == 1 && redeemedTokens.length < 1) {
+  } else if (
+    TESTING == 0 &&
+    ogTokens.length < 50 &&
+    burnedTokens.length == 1 &&
+    redeemedTokens.length < 1
+  ) {
     res.status(200).json({
       tokens: ogTokens,
       numToMint: 1,
