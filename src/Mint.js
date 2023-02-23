@@ -37,7 +37,7 @@ const style = {
   top: "50%",
   left: "50%",
   maxHeight: "500px",
-  maxWidth: "50%",
+  maxWidth: "65%",
   overflow: "scroll",
   transform: "translate(-50%, -50%)",
   backgroundColor: "black",
@@ -653,7 +653,7 @@ class Mint extends React.Component {
                   }}
                 />
               ) : (
-                <img />
+                <></>
               )}{" "}
               <img
                 id={image.imageUri}
