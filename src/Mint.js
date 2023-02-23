@@ -145,6 +145,52 @@ class Mint extends React.Component {
 
     const { accounts, selectedNfts } = this.state;
 
+    let resolvedHashes = [];
+    let hash = await this.mintSingle(selectedNfts[0]).catch((err) => {
+      this.setState({
+        failedMessage: err.message,
+        burningTokens: false,
+        mintingTokens: false,
+      });
+      return;
+    });
+
+    if (!hash) {
+      return;
+    }
+
+    resolvedHashes.push(hash);
+
+    if (selectedNfts.length == 2) {
+      let hash = await this.mintSingle(selectedNfts[1]).catch((err) => {
+        this.setState({
+          failedMessage: err.message,
+          burningTokens: false,
+          mintingTokens: false,
+        });
+      });
+      if (!hash) {
+        return;
+      }
+      resolvedHashes.push(hash);
+    }
+
+    if (!resolvedHashes) {
+      return;
+    }
+
+    this.setState({
+      burnHashes: resolvedHashes,
+    });
+
+    if (resolvedHashes && resolvedHashes.length > 0) {
+      this.mint(resolvedHashes.length);
+    }
+  }
+
+  async mintSingle(selectedNft) {
+    const { accounts, selectedNfts } = this.state;
+
     const ethersProvider = new ethers.providers.Web3Provider(
       window.ethereum,
       "any"
@@ -158,8 +204,7 @@ class Mint extends React.Component {
     );
 
     const contractInstance = contractFactory.attach(testAddress);
-    let selectedNft = selectedNfts[0];
-    //const hashes = selectedNfts.map(async (selectedNft) => {
+
     let rawTxn = await contractInstance.populateTransaction.transferFrom(
       accounts[0],
       "0x000000000000000000000000000000000000dead",
@@ -180,25 +225,7 @@ class Mint extends React.Component {
       return "https://etherscan.io/tx/" + signedTxn.hash;
     });
 
-    let resolvedHashes = await Promise.all([hash]).catch((err) => {
-      this.setState({
-        failedMessage: err.message,
-        burningTokens: false,
-        mintingTokens: false,
-      });
-    });
-
-    if (!resolvedHashes) {
-      return;
-    }
-
-    this.setState({
-      burnHashes: resolvedHashes,
-    });
-
-    if (resolvedHashes && resolvedHashes.length > 0) {
-      this.mint(resolvedHashes.length);
-    }
+    return hash;
   }
 
   async mintLimitedEdition() {

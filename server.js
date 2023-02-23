@@ -146,7 +146,6 @@ const getNumberOfTokensBurned = async (address, contractAddress) => {
         return [];
       }
       return transfers.map((transfer) => {
-        console.log(transfer);
         return transfer.hash;
       });
     })
