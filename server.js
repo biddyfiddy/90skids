@@ -7,6 +7,7 @@ const axios = require("axios");
 const app = express();
 const port = process.env.PORT || 3001;
 
+const DROP_START_DATE = Date.parse(process.env.DROP_DATE);
 const NULL_ADDRESS = "0x000000000000000000000000000000000000dead";
 const TESTING = process.env.TESTING;
 const EARLY_ACCESS = process.env.EARLY_ACCESS;
@@ -108,8 +109,10 @@ app.post("/mint", async (req, res) => {
   // Check if already redeemed
   if (ogTokens.length >= 50 && redeemedTokens.length >= 2) {
     res.status(500).json({ message: "You have already redeemed 2 tokens" });
+    return;
   } else if (ogTokens.length < 50 && redeemedTokens.length >= 1) {
     res.status(500).json({ message: "You have already redeemed 1 token" });
+    return;
   }
 
   let sign = signing(address, amount);
@@ -146,6 +149,12 @@ const getNumberOfTokensBurned = async (address, contractAddress) => {
         return [];
       }
       return transfers.map((transfer) => {
+        /*
+        Enable in future burns
+        let date = transfer.metadata.blockTimestamp;
+        let parsedDate = Date.parse(date);
+        check parsedDate > DROP_START_DATE
+        */
         return transfer.hash;
       });
     })
@@ -221,7 +230,7 @@ const getLimitedEditionMintedAlchemy = async (address, contractAddress) => {
         let type;
         if (attributes) {
           attributes.forEach((attribute) => {
-            if (attribute.trait_type === "Type" && attribute.value === "1/1") {
+            if (attribute.trait_type === "Type" && attribute.value.startsWith("SOTY")) {
               ownedLimitedEdition = true;
             }
           });
