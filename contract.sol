@@ -13,9 +13,9 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
 
   using Counters for Counters.Counter;
 
-  uint256 private maxBurnSupply = 250;
+  uint256 private maxBurnSupply = 200;
 
-  uint256 private maxLimitedSupply = 50;
+  uint256 private maxLimitedSupply = 20;
 
   string private _baseTokenURI;
 
@@ -29,9 +29,9 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
 
   mapping(bytes32 => bool) private _redeemedBurnAddresses;
 
-  uint32 currentLimitedEditionMappingVersion;
+  uint32 private currentLimitedEditionMappingVersion;
 
-  uint32 currentBurnedMappingVersion;
+  uint32 private currentBurnedMappingVersion;
 
   Counters.Counter private _tokenIdCounter;
 
@@ -181,5 +181,4 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
         bytes32 key = keccak256(abi.encodePacked(currentBurnedMappingVersion, wallet));
         return _redeemedBurnAddresses[key];
   }
-
 }

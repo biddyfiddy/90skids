@@ -7,6 +7,7 @@ const axios = require("axios");
 const app = express();
 const port = process.env.PORT || 3001;
 
+const BURN_MAX = 200;
 const DROP_START_DATE = Date.parse(process.env.DROP_DATE);
 const NULL_ADDRESS = "0x000000000000000000000000000000000000dead";
 const TESTING = process.env.TESTING;
@@ -317,6 +318,28 @@ const getOwnedTokensOG = async (address, contractAddress) => {
     });
 };
 
+const getTotalTokens = async (contractAddress) => {
+  let alchemyKey = ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST;
+  const options = {
+    method: "GET",
+    url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/nft/v2/${alchemyKey}/getNFTsForCollection`,
+    params: {
+      contractAddress: contractAddress,
+      withMetadata: "true",
+    },
+    headers: { accept: "application/json" },
+  };
+  return axios
+    .request(options)
+    .then((response) => {
+      let responseData = response.data;
+      return responseData.nfts.length;
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
 const getOwnedTokensNewContract = async (address, contractAddress) => {
   let alchemyKey = ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST;
   const options = {
@@ -402,6 +425,12 @@ app.post("/owned", async (req, res) => {
     address.toLowerCase(),
     newAddress
   );
+
+  let numTokens = await getTotalTokens(newAddress);
+  if (numTokens >= BURN_MAX) {
+        res.status(500).json({ message: "All new NFTs have been claimed." });
+        return;
+  }
 
   console.log(`OG Images fetched for ${address}`);
 
