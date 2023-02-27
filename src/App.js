@@ -233,7 +233,7 @@ class App extends React.Component {
           <span> / </span>
           <a
             style={{ cursor: "pointer" }}
-            href={"https://www.instagram.com/90s_kids_club/"}
+            href={"https://www.instagram.com/nineties.entertainment/"}
             rel="noopener noreferrer"
             target="_blank"
           >

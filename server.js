@@ -231,7 +231,10 @@ const getLimitedEditionMintedAlchemy = async (address, contractAddress) => {
         let type;
         if (attributes) {
           attributes.forEach((attribute) => {
-            if (attribute.trait_type === "Type" && attribute.value.startsWith("SOTY")) {
+            if (
+              attribute.trait_type === "Type" &&
+              attribute.value.startsWith("SOTY")
+            ) {
               ownedLimitedEdition = true;
             }
           });
@@ -428,8 +431,8 @@ app.post("/owned", async (req, res) => {
 
   let numTokens = await getTotalTokens(newAddress);
   if (numTokens >= BURN_MAX) {
-        res.status(500).json({ message: "All new NFTs have been claimed." });
-        return;
+    res.status(500).json({ message: "All new NFTs have been claimed." });
+    return;
   }
 
   console.log(`OG Images fetched for ${address}`);
