@@ -58,7 +58,19 @@ app.post("/mintLimitedEdition", async (req, res) => {
   }
 
   // Get owned OG tokens
-  let ogTokens = await getOwnedTokensOG(address.toLowerCase(), testAddress);
+  let ogTokenResponse = await getOwnedTokensOG(
+    address.toLowerCase(),
+    testAddress
+  );
+  let ogTokens = ogTokenResponse.tokens;
+  if (ogTokenResponse.pageKey) {
+    let moreTokens = await getOwnedTokensOG(
+      address.toLowerCase(),
+      testAddress,
+      ogTokenResponse.pageKey
+    );
+    ogTokens.push(moreTokens);
+  }
 
   // Get redeemed status
   let redeemed = await getLimitedEditionMintedAlchemy(
@@ -95,7 +107,20 @@ app.post("/mint", async (req, res) => {
   const amount = body.amount;
 
   // Get owned OG tokens
-  let ogTokens = await getOwnedTokensOG(address.toLowerCase(), testAddress);
+  let ogTokenResponse = await getOwnedTokensOG(
+    address.toLowerCase(),
+    testAddress
+  );
+  let ogTokens = ogTokenResponse.tokens;
+  if (ogTokenResponse.pageKey) {
+    let moreTokens = await getOwnedTokensOG(
+      address.toLowerCase(),
+      testAddress,
+      ogTokenResponse.pageKey
+    );
+    ogTokens.push(moreTokens);
+  }
+
   // Get redeemed tokens
   let redeemedTokens = await getOwnedTokensNewContract(
     address.toLowerCase(),
@@ -266,27 +291,46 @@ const nonSotyCanMint = (ogTokens) => {
   return coffeeCup > 0 && vx > 0 && keyset > 0 && trafficCone > 0;
 };
 
-const getOwnedTokensOG = async (address, contractAddress) => {
+const getOwnedTokensOG = async (address, contractAddress, page) => {
   let alchemyKey = ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST;
-  const options = {
-    method: "GET",
-    url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/nft/v2/${alchemyKey}/getNFTs`,
-    params: {
-      owner: address,
-      contractAddresses: [contractAddress],
-      withMetadata: "true",
-    },
-    headers: { accept: "application/json" },
-  };
+
+  let options;
+  if (page) {
+    options = {
+      method: "GET",
+      url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/nft/v2/${alchemyKey}/getNFTs`,
+      params: {
+        pageKey: page,
+        owner: address,
+        contractAddresses: [contractAddress],
+        withMetadata: "true",
+      },
+      headers: { accept: "application/json" },
+    };
+  } else {
+    options = {
+      method: "GET",
+      url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/nft/v2/${alchemyKey}/getNFTs`,
+      params: {
+        owner: address,
+        contractAddresses: [contractAddress],
+        withMetadata: "true",
+      },
+      headers: { accept: "application/json" },
+    };
+  }
   return axios
     .request(options)
     .then((response) => {
       let responseData = response.data;
       let tokens = responseData.ownedNfts;
+      let pageKey;
+      if (responseData.pageKey) {
+        pageKey = responseData.pageKey;
+      }
 
       let tokenIds = [];
       if (!tokens || tokens.length == 0) {
-        console.log("No tokens found.");
         return tokenIds;
       }
       tokens.forEach((token) => {
@@ -314,7 +358,7 @@ const getOwnedTokensOG = async (address, contractAddress) => {
           });
         }
       });
-      return tokenIds;
+      return { tokens: tokenIds, pageKey: pageKey };
     })
     .catch((err) => {
       console.log(err);
@@ -412,7 +456,19 @@ app.post("/owned", async (req, res) => {
   console.log(`Fetching image urls for ${address}`);
 
   // Get owned OG tokens
-  let ogTokens = await getOwnedTokensOG(address.toLowerCase(), testAddress);
+  let ogTokenResponse = await getOwnedTokensOG(
+    address.toLowerCase(),
+    testAddress
+  );
+  let ogTokens = ogTokenResponse.tokens;
+  if (ogTokenResponse.pageKey) {
+    let moreTokens = await getOwnedTokensOG(
+      address.toLowerCase(),
+      testAddress,
+      ogTokenResponse.pageKey
+    );
+    ogTokens = ogTokens.concat(moreTokens.tokens);
+  }
 
   // Get redeemed tokens
   let redeemedTokens = await getOwnedTokensNewContract(
