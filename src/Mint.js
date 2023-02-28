@@ -525,13 +525,19 @@ class Mint extends React.Component {
         imageLoading: false,
         imageLoadingError: "",
         images: tokens,
-        burnLimit: tokens.length >= 50 ? 2 : 1,
-        modalOpen: true,
-        mintingTokens: true,
-        redeemMode: false,
+        burnLimit: json.numToMint,
+        redeemMode: json.redeemed === undefined ? false : !json.redeemed,
         burnHashes: json.burnedHashes,
       });
       this.mint(json.numToMint);
+    } else if (json.numToMint == 0) {
+      this.setState({
+        imageLoading: false,
+        imageLoadingError: "",
+        images: tokens,
+        redeemMode: json.redeemed === undefined ? false : !json.redeemed,
+        burnLimit: 0,
+      });
     } else {
       this.setState({
         imageLoading: false,

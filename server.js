@@ -455,12 +455,52 @@ app.post("/owned", async (req, res) => {
   if (
     TESTING == 0 &&
     ogTokens.length >= 50 &&
-    (burnedTokens.length == 2 || burnedTokens.length == 1) &&
-    redeemedTokens.length < 2
+    burnedTokens.length == 2 &&
+    redeemedTokens.length == 1
   ) {
     res.status(200).json({
       tokens: ogTokens,
-      numToMint: 2 - redeemedTokens.length,
+      numToMint: 1,
+      redeemed: redeemed,
+      burnedHashes: burnedTokens,
+    });
+    return;
+  } else if (
+    TESTING == 0 &&
+    ogTokens.length >= 50 &&
+    burnedTokens.length == 2 &&
+    redeemedTokens.length == 0
+  ) {
+    res.status(200).json({
+      tokens: ogTokens,
+      numToMint: 2,
+      redeemed: redeemed,
+      burnedHashes: burnedTokens,
+    });
+    return;
+  } else if (
+    TESTING == 0 &&
+    ogTokens.length >= 50 &&
+    burnedTokens.length == 1 &&
+    redeemedTokens.length == 0
+  ) {
+    res.status(200).json({
+      tokens: ogTokens,
+      numToMint: 2,
+      redeemed: redeemed,
+      burnedHashes: burnedTokens,
+    });
+    return;
+  } else if (
+    TESTING == 0 &&
+    ogTokens.length >= 50 &&
+    burnedTokens.length == 2 &&
+    redeemedTokens.length == 2
+  ) {
+    res.status(200).json({
+      tokens: ogTokens,
+      numToMint: 0,
+      redeemed: redeemed,
       burnedHashes: burnedTokens,
     });
     return;
@@ -473,6 +513,20 @@ app.post("/owned", async (req, res) => {
     res.status(200).json({
       tokens: ogTokens,
       numToMint: 1,
+      redeemed: redeemed,
+      burnedHashes: burnedTokens,
+    });
+    return;
+  } else if (
+    TESTING == 0 &&
+    ogTokens.length < 50 &&
+    burnedTokens.length == 1 &&
+    redeemedTokens.length == 1
+  ) {
+    res.status(200).json({
+      tokens: ogTokens,
+      numToMint: 0,
+      redeemed: redeemed,
       burnedHashes: burnedTokens,
     });
     return;
