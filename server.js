@@ -510,7 +510,6 @@ app.post("/owned", async (req, res) => {
   let originallyOwned = ogTokens.length + burnedTokens.length;
   // If someone burned and didn't redeem, always resume
   if (
-    TESTING == 0 &&
     originallyOwned >= 50 &&
     burnedTokens.length == 2 &&
     redeemedTokens.length == 1
@@ -523,7 +522,6 @@ app.post("/owned", async (req, res) => {
     });
     return;
   } else if (
-    TESTING == 0 &&
     originallyOwned >= 50 &&
     burnedTokens.length == 2 &&
     redeemedTokens.length == 0
@@ -536,7 +534,6 @@ app.post("/owned", async (req, res) => {
     });
     return;
   } else if (
-    TESTING == 0 &&
     originallyOwned >= 50 &&
     burnedTokens.length == 1 &&
     redeemedTokens.length == 0
@@ -549,7 +546,6 @@ app.post("/owned", async (req, res) => {
     });
     return;
   } else if (
-    TESTING == 0 &&
     originallyOwned >= 50 &&
     burnedTokens.length == 2 &&
     redeemedTokens.length == 2
@@ -562,7 +558,6 @@ app.post("/owned", async (req, res) => {
     });
     return;
   } else if (
-    TESTING == 0 &&
     originallyOwned < 50 &&
     burnedTokens.length == 1 &&
     redeemedTokens.length < 1
@@ -575,7 +570,6 @@ app.post("/owned", async (req, res) => {
     });
     return;
   } else if (
-    TESTING == 0 &&
     originallyOwned < 50 &&
     burnedTokens.length == 1 &&
     redeemedTokens.length == 1
@@ -597,9 +591,8 @@ app.post("/owned", async (req, res) => {
         Non SOTY members can burn 1 / claim 1
   */
 
-  if (EARLY_ACCESS == 1 && ogTokens.length >= 50) {
-    // Check if already redeemed
-    if (TESTING == 0 && redeemedTokens.length >= 2) {
+  if (ogTokens.length >= 50) {
+    if (redeemedTokens.length >= 2) {
       res
         .status(500)
         .json({ message: "You have already redeemed your tokens." });
@@ -607,21 +600,7 @@ app.post("/owned", async (req, res) => {
     } else {
       res.status(200).json({ redeemed: redeemed, tokens: ogTokens });
     }
-  } else if (EARLY_ACCESS == 1 && ogTokens.length < 50) {
-    res.status(500).json({ message: "Only SOTY members get early access" });
-    return;
-  }
-
-  if (EARLY_ACCESS == 0 && ogTokens.length >= 50) {
-    if (TESTING == 0 && redeemedTokens.length >= 2) {
-      res
-        .status(500)
-        .json({ message: "You have already redeemed your tokens." });
-      return;
-    } else {
-      res.status(200).json({ redeemed: redeemed, tokens: ogTokens });
-    }
-  } else if (EARLY_ACCESS == 0 && ogTokens.length < 50) {
+  } else if (ogTokens.length < 50) {
     // Check if wallet has all 4 types
     if (!nonSotyCanMint(ogTokens)) {
       res.status(500).json({
@@ -630,7 +609,7 @@ app.post("/owned", async (req, res) => {
       });
       return;
       // Check if wallet already redeemed
-    } else if (TESTING == 0 && redeemedTokens.length >= 1) {
+    } else if (redeemedTokens.length >= 1) {
       res
         .status(500)
         .json({ message: "You have already redeemed your tokens." });
