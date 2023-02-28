@@ -451,10 +451,11 @@ app.post("/owned", async (req, res) => {
     return;
   }
 
+  let originallyOwned = ogTokens.length + burnedTokens.length;
   // If someone burned and didn't redeem, always resume
   if (
     TESTING == 0 &&
-    ogTokens.length >= 50 &&
+    originallyOwned >= 50 &&
     burnedTokens.length == 2 &&
     redeemedTokens.length == 1
   ) {
@@ -467,7 +468,7 @@ app.post("/owned", async (req, res) => {
     return;
   } else if (
     TESTING == 0 &&
-    ogTokens.length >= 50 &&
+    originallyOwned >= 50 &&
     burnedTokens.length == 2 &&
     redeemedTokens.length == 0
   ) {
@@ -480,7 +481,7 @@ app.post("/owned", async (req, res) => {
     return;
   } else if (
     TESTING == 0 &&
-    ogTokens.length >= 50 &&
+    originallyOwned >= 50 &&
     burnedTokens.length == 1 &&
     redeemedTokens.length == 0
   ) {
@@ -493,7 +494,7 @@ app.post("/owned", async (req, res) => {
     return;
   } else if (
     TESTING == 0 &&
-    ogTokens.length >= 50 &&
+    originallyOwned >= 50 &&
     burnedTokens.length == 2 &&
     redeemedTokens.length == 2
   ) {
@@ -506,7 +507,7 @@ app.post("/owned", async (req, res) => {
     return;
   } else if (
     TESTING == 0 &&
-    ogTokens.length < 50 &&
+    originallyOwned < 50 &&
     burnedTokens.length == 1 &&
     redeemedTokens.length < 1
   ) {
@@ -519,7 +520,7 @@ app.post("/owned", async (req, res) => {
     return;
   } else if (
     TESTING == 0 &&
-    ogTokens.length < 50 &&
+    originallyOwned < 50 &&
     burnedTokens.length == 1 &&
     redeemedTokens.length == 1
   ) {
