@@ -39,7 +39,7 @@ contract NinetiesKids is ERC721URIStorage, Ownable, EIP712 {
 
   Counters.Counter private _currentLimitedEditionUriCounter;
 
-  constructor(address systemAddress) ERC721("90s Kids", "90SKIDS") EIP712("90s Kids", "90SKIDS") {
+  constructor(address systemAddress) ERC721("90's Kids Club", "90SKIDSCLUB") EIP712("90's Kids Club", "90SKIDSCLUB") {
     _systemAddress =  systemAddress;
   }
 
