@@ -370,7 +370,10 @@ const getOwnedTokensNewContract = async (address, contractAddress) => {
         if (token.metadata && token.metadata.attributes) {
           let isLimitedEdition = false;
           token.metadata.attributes.forEach((attribute) => {
-            if (attribute.trait_type === "Type" && attribute.value === "1/1") {
+            if (
+              attribute.trait_type === "Type" &&
+              attribute.value.startsWith("SOTY")
+            ) {
               isLimitedEdition = true;
             }
           });
