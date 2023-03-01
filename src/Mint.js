@@ -419,6 +419,9 @@ class Mint extends React.Component {
         imageLoadingError: "",
         images: tokens,
         burnLimit: json.numToMint,
+        modalOpen: true,
+          burningTokens: false,
+          mintingTokens: true,
         redeemMode: false,
         burnHashes: json.burnedHashes,
       });
