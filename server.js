@@ -449,7 +449,7 @@ app.post("/owned", async (req, res) => {
 
   // Check if wallet has 90s Kids Tokens
   if (!ogTokens) {
-    res.status(500).json({ message: "Could not get owned tokens" });
+    res.status(500).json({ message: "You have no owned tokens." });
     return;
   }
 
