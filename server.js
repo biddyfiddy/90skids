@@ -459,56 +459,15 @@ app.post("/owned", async (req, res) => {
   }
 
   let originallyOwned = ogTokens.length + burnedTokens.length;
+    if (originallyOwned >= 50) {
+              res
+                .status(500)
+                .json({ message: "You have already redeemed your tokens." });
+              return;
+    }
+
   // If someone burned and didn't redeem, always resume
   if (
-    originallyOwned >= 50 &&
-    burnedTokens.length == 2 &&
-    redeemedTokens.length == 1
-  ) {
-    res.status(200).json({
-      tokens: ogTokens,
-      numToMint: 1,
-      redeemed: redeemed,
-      burnedHashes: burnedTokens,
-    });
-    return;
-  } else if (
-    originallyOwned >= 50 &&
-    burnedTokens.length == 2 &&
-    redeemedTokens.length == 0
-  ) {
-    res.status(200).json({
-      tokens: ogTokens,
-      numToMint: 2,
-      redeemed: redeemed,
-      burnedHashes: burnedTokens,
-    });
-    return;
-  } else if (
-    originallyOwned >= 50 &&
-    burnedTokens.length == 1 &&
-    redeemedTokens.length == 0
-  ) {
-    res.status(200).json({
-      tokens: ogTokens,
-      numToMint: 2,
-      redeemed: redeemed,
-      burnedHashes: burnedTokens,
-    });
-    return;
-  } else if (
-    originallyOwned >= 50 &&
-    burnedTokens.length == 2 &&
-    redeemedTokens.length == 2
-  ) {
-    res.status(200).json({
-      tokens: ogTokens,
-      numToMint: 0,
-      redeemed: redeemed,
-      burnedHashes: burnedTokens,
-    });
-    return;
-  } else if (
     originallyOwned < 50 &&
     burnedTokens.length == 1 &&
     redeemedTokens.length < 1
@@ -534,24 +493,7 @@ app.post("/owned", async (req, res) => {
     return;
   }
 
-  /*
-    Early Access:
-        Only SOTY members can burn 2 / claim 2  and redeem special tokens
-    Normal Access:
-        SOTY members can burn 2 / claim 2  and redeem special tokens
-        Non SOTY members can burn 1 / claim 1
-  */
-
-  if (ogTokens.length >= 50) {
-    if (redeemedTokens.length >= 2) {
-      res
-        .status(500)
-        .json({ message: "You have already redeemed your tokens." });
-      return;
-    } else {
-      res.status(200).json({ redeemed: redeemed, tokens: ogTokens });
-    }
-  } else if (ogTokens.length < 50) {
+  if (ogTokens.length < 50) {
     // Check if wallet has all 4 types
     if (!nonSotyCanMint(ogTokens)) {
       res.status(500).json({
