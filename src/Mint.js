@@ -228,113 +228,6 @@ class Mint extends React.Component {
     return hash;
   }
 
-  async mintLimitedEdition() {
-    const { accounts } = this.state;
-
-    if (!accounts || accounts.length === 0) {
-      return;
-    }
-
-    this.setState({
-      redeemMode: false,
-      redeemingMode: true,
-    });
-
-    const ethersProvider = new ethers.providers.Web3Provider(
-      window.ethereum,
-      "any"
-    );
-    const signer = ethersProvider.getSigner();
-    let rshoePcontractFactory = new ethers.ContractFactory(
-      newAbi,
-      newByteCode,
-      signer
-    );
-
-    let contractInstance = rshoePcontractFactory.attach(newAddress);
-
-    let mintHashes = [];
-    try {
-      const requestOptions = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          address: accounts[0],
-          amount: 1,
-        }),
-      };
-
-      let response = await fetch("/mintLimitedEdition", requestOptions);
-
-      if (!response || response.status !== 200) {
-        let reason = await response.json();
-        this.setState({
-          redeemingMode: false,
-          redeemError: reason.message,
-        });
-        return;
-      }
-
-      let json = await response.json();
-
-      let rawTxn =
-        await contractInstance.populateTransaction.publicLimitedEditionMint(
-          json.amount,
-          json.nonce,
-          json.hash,
-          json.signature
-        );
-
-      if (!rawTxn) {
-        this.setState({
-          redeemingMode: false,
-        });
-        return;
-      }
-
-      let signedTxn = await signer.sendTransaction(rawTxn);
-
-      if (!signedTxn) {
-        this.setState({
-          redeemingMode: false,
-        });
-        return;
-      }
-
-      mintHashes.push(
-        await signedTxn.wait().then((reciept) => {
-          return "https://etherscan.io/tx/" + signedTxn.hash;
-        })
-      );
-    } catch (err) {
-      let message;
-      if (err.error) {
-        message = err.error.message;
-      } else {
-        message = err.message;
-      }
-
-      this.setState({
-        redeemingMode: false,
-        redeemError: message,
-      });
-    }
-
-    let resolvedHashes = await Promise.all(mintHashes).catch((err) => {
-      this.setState({
-        redeemingMode: false,
-      });
-    });
-
-    this.setState({
-      redeemedHash: resolvedHashes,
-      redeemingMode: false,
-      redeemedMode: true,
-    });
-  }
-
   async mint(numToMint) {
     const { accounts } = this.state;
 
@@ -371,7 +264,7 @@ class Mint extends React.Component {
         },
         body: JSON.stringify({
           address: accounts[0],
-          amount: numToMint,
+          amount: 1,
         }),
       };
 
@@ -469,7 +362,7 @@ class Mint extends React.Component {
   }
 
   async redeem() {
-    await this.mintLimitedEdition();
+    //await this.mintLimitedEdition();
   }
 
   async componentDidMount() {
@@ -526,7 +419,7 @@ class Mint extends React.Component {
         imageLoadingError: "",
         images: tokens,
         burnLimit: json.numToMint,
-        redeemMode: json.redeemed === undefined ? false : !json.redeemed,
+        redeemMode: false,
         burnHashes: json.burnedHashes,
       });
       this.mint(json.numToMint);
@@ -535,7 +428,7 @@ class Mint extends React.Component {
         imageLoading: false,
         imageLoadingError: "",
         images: tokens,
-        redeemMode: json.redeemed === undefined ? false : !json.redeemed,
+        redeemMode: false,
         burnLimit: 0,
       });
     } else {
@@ -543,7 +436,7 @@ class Mint extends React.Component {
         imageLoading: false,
         imageLoadingError: "",
         images: tokens,
-        redeemMode: json.redeemed === undefined ? false : !json.redeemed,
+        redeemMode: false,
         burnLimit: tokens.length >= 50 ? 2 : 1,
       });
     }
@@ -880,10 +773,6 @@ class Mint extends React.Component {
           <></>
         )}
         {imageLoading ? this.renderImageLoading() : <></>}
-        {redeemMode ? this.renderRedeem() : <></>}
-        {redeemingMode ? this.renderRedeeming() : <></>}
-        {redeemError !== "" ? this.renderRedeemError() : <></>}
-        {redeemError === "" && redeemedMode ? this.renderRedeemed() : <></>}
         {!imageLoading && imageLoadingError != "" ? (
           this.renderImageLoadingError()
         ) : (

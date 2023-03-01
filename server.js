@@ -36,64 +36,6 @@ const {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "build")));
 
-/* ======================= ENDPOINTS ======================= */
-app.post("/mintLimitedEdition", async (req, res) => {
-  const body = req.body;
-  if (!body || !body.address || !body.amount) {
-    res.status(500).json({
-      message: "Bad post body",
-    });
-    return;
-  }
-
-  const address = body.address.toLowerCase();
-  const amount = body.amount;
-
-  // Check for malicious people doing malicious shit
-  if (amount != 1) {
-    res.status(500).json({
-      message: "Who the fuck do you think you are?",
-    });
-    return;
-  }
-
-  // Get owned OG tokens
-  let ogTokenResponse = await getOwnedTokensOG(
-    address.toLowerCase(),
-    testAddress
-  );
-  let ogTokens = ogTokenResponse.tokens;
-  if (ogTokenResponse.pageKey) {
-    let moreTokens = await getOwnedTokensOG(
-      address.toLowerCase(),
-      testAddress,
-      ogTokenResponse.pageKey
-    );
-    ogTokens.push(moreTokens);
-  }
-
-  // Get redeemed status
-  let redeemed = await getLimitedEditionMintedAlchemy(
-    address.toLowerCase(),
-    newAddress
-  );
-
-  if (redeemed) {
-    res.status(500).json({
-      message: "You have already redeemed your limited edition token.",
-    });
-    return;
-  } else if (ogTokens.length < 50) {
-    res.status(500).json({
-      message: "You cannot claim a limited edition token.",
-    });
-    return;
-  }
-
-  let sign = signing(address, amount);
-  res.status(200).json(sign);
-});
-
 app.post("/mint", async (req, res) => {
   const body = req.body;
   if (!body || !body.address || !body.amount) {
@@ -101,6 +43,13 @@ app.post("/mint", async (req, res) => {
       message: "Bad post body",
     });
     return;
+  }
+
+  if (body.amount != 1) {
+        res.status(500).json({
+          message: "You can only mint 1",
+        });
+        return;
   }
 
   const address = body.address.toLowerCase();
@@ -132,6 +81,11 @@ app.post("/mint", async (req, res) => {
     testAddress
   );
 
+  if (!ogTokens) {
+    res.status(500).json({ message: "Server error" });
+    return;
+  }
+
   // Check if already redeemed
   if (ogTokens.length >= 50 && redeemedTokens.length >= 2) {
     res.status(500).json({ message: "You have already redeemed 2 tokens" });
@@ -141,7 +95,7 @@ app.post("/mint", async (req, res) => {
     return;
   }
 
-  let sign = signing(address, amount);
+  let sign = signing(address, 1);
   res.status(200).json(sign);
 });
 
@@ -483,10 +437,7 @@ app.post("/owned", async (req, res) => {
   );
 
   // Get redeemed status
-  let redeemed = await getLimitedEditionMintedAlchemy(
-    address.toLowerCase(),
-    newAddress
-  );
+  let redeemed = true;
 
   let numTokens = await getTotalTokens(newAddress);
   if (numTokens >= BURN_MAX) {
