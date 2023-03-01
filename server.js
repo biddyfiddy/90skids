@@ -7,7 +7,7 @@ const axios = require("axios");
 const app = express();
 const port = process.env.PORT || 3001;
 
-const BURN_MAX = 200;
+const BURN_MAX = 250;
 const DROP_START_DATE = Date.parse(process.env.DROP_DATE);
 const NULL_ADDRESS = "0x000000000000000000000000000000000000dead";
 const TESTING = process.env.TESTING;
