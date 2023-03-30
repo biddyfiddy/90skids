@@ -7,7 +7,11 @@ const axios = require("axios");
 const app = express();
 const port = process.env.PORT || 3001;
 
-const BURN_MAX = 250;
+const SOTY = 50; // 50
+const BURN_MAX = 450;
+const BASE_NUM = 19; // 249
+const LIMITED_EDITION_BASE_NUM = 25; // 25
+
 const DROP_START_DATE = Date.parse(process.env.DROP_DATE);
 const NULL_ADDRESS = "0x000000000000000000000000000000000000dead";
 const TESTING = process.env.TESTING;
@@ -36,7 +40,51 @@ const {
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "build")));
 
-app.post("/mint", async (req, res) => {
+/*app.post("/mintTemp", async (req, res) => {
+  const body = req.body;
+  const address = body.address.toLowerCase();
+  const amount = body.amount;
+  let sign = signing(address, amount);
+  res.status(200).json(sign);
+});*/
+
+/* ======================= ENDPOINTS ======================= */
+app.post("/redeemed", async (req, res) => {
+  const body = req.body;
+  if (!body || !body.address) {
+    res.status(500).json({
+      message: "Bad post body",
+    });
+    return;
+  }
+  const address = body.address.toLowerCase();
+
+  let ogTokenResponse = await getOwnedTokensOG(
+    address.toLowerCase(),
+    testAddress
+  );
+  let ogTokens = ogTokenResponse.tokens;
+
+  // Break out early if the account is not a soty
+    if (!ogTokens || ogTokens.length < SOTY) {
+    res.status(200).json({
+      redeemed: true,
+    });
+    return;
+  }
+
+  // Get redeemed status
+  let redeemed = await getLimitedEditionMintedAlchemy(
+    address.toLowerCase(),
+    newAddress
+  );
+
+  res.status(200).json({
+    redeemed: redeemed,
+  });
+});
+
+app.post("/mintLimitedEdition", async (req, res) => {
   const body = req.body;
   if (!body || !body.address || !body.amount) {
     res.status(500).json({
@@ -45,11 +93,69 @@ app.post("/mint", async (req, res) => {
     return;
   }
 
-  if (body.amount != 1) {
-        res.status(500).json({
-          message: "You can only mint 1",
-        });
-        return;
+  const address = body.address.toLowerCase();
+  const amount = body.amount;
+
+  // Check for malicious people doing malicious shit
+  if (amount != 1) {
+    res.status(500).json({
+      message: "Who the fuck do you think you are?",
+    });
+    return;
+  }
+
+  // Get owned OG tokens
+  let ogTokenResponse = await getOwnedTokensOG(
+    address.toLowerCase(),
+    testAddress
+  );
+  let ogTokens = ogTokenResponse.tokens;
+
+  if (ogTokenResponse.pageKey) {
+    let moreTokens = await getOwnedTokensOG(
+      address.toLowerCase(),
+      testAddress,
+      ogTokenResponse.pageKey
+    );
+    ogTokens.push(moreTokens);
+  }
+    // Check for SOTY
+    if (!ogTokens || ogTokens.length < SOTY) {
+      res.status(500).json({
+        message: "You cannot claim a limited edition token.",
+      });
+      return;
+    }
+
+  // Get redeemed status
+  let redeemed = await getLimitedEditionMintedAlchemy(
+    address.toLowerCase(),
+    newAddress
+  );
+
+  if (redeemed) {
+    res.status(500).json({
+      message: "You have already redeemed your limited edition token.",
+    });
+    return;
+  } else if (ogTokens.length < SOTY) {
+    res.status(500).json({
+      message: "You cannot claim a limited edition token.",
+    });
+    return;
+  }
+
+  let sign = signing(address, amount);
+  res.status(200).json(sign);
+});
+
+app.post("/mint", async (req, res) => {
+  const body = req.body;
+  if (!body || !body.address || !body.amount) {
+    res.status(500).json({
+      message: "Bad post body",
+    });
+    return;
   }
 
   const address = body.address.toLowerCase();
@@ -81,21 +187,16 @@ app.post("/mint", async (req, res) => {
     testAddress
   );
 
-  if (!ogTokens) {
-    res.status(500).json({ message: "Server error" });
-    return;
-  }
-
   // Check if already redeemed
-  if (ogTokens.length >= 50 && redeemedTokens.length >= 2) {
+  if (ogTokens.length >= SOTY && redeemedTokens.length >= 2) {
     res.status(500).json({ message: "You have already redeemed 2 tokens" });
     return;
-  } else if (ogTokens.length < 50 && redeemedTokens.length >= 1) {
+  } else if (ogTokens.length < SOTY && redeemedTokens.length >= 1) {
     res.status(500).json({ message: "You have already redeemed 1 token" });
     return;
   }
 
-  let sign = signing(address, 1);
+  let sign = signing(address, amount);
   res.status(200).json(sign);
 });
 
@@ -128,52 +229,15 @@ const getNumberOfTokensBurned = async (address, contractAddress) => {
       if (!transfers) {
         return [];
       }
-      return transfers.map((transfer) => {
-        /*
-        Enable in future burns
-        let date = transfer.metadata.blockTimestamp;
-        let parsedDate = Date.parse(date);
-        check parsedDate > DROP_START_DATE
-        */
-        return transfer.hash;
-      });
-    })
-    .catch(function (error) {
-      console.error(error);
-    });
-};
-
-const getTransferredAlchemy = async (address, contractAddress) => {
-  let alchemyKey = ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST;
-  const options = {
-    method: "POST",
-    url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/v2/${alchemyKey}`,
-    headers: { accept: "application/json", "content-type": "application/json" },
-    data: {
-      id: 1,
-      jsonrpc: "2.0",
-      method: "alchemy_getAssetTransfers",
-      params: [
-        {
-          fromAddress: "0x0000000000000000000000000000000000000000",
-          contractAddresses: [contractAddress],
-          toAddress: address,
-          category: ["erc721"],
-          withMetadata: true,
-        },
-      ],
-    },
-  };
-  return await axios
-    .request(options)
-    .then(function (response) {
-      let transfers = response.data.result.transfers;
-      if (!transfers) {
-        return [];
-      }
-      return transfers.map((transfer) => {
-        return transfer.hash;
-      });
+      return transfers
+        .filter((transfer) => {
+          let date = transfer.metadata.blockTimestamp;
+          let parsedDate = Date.parse(date);
+          return parsedDate > DROP_START_DATE;
+        })
+        .map((transfer) => {
+          return transfer.hash;
+        });
     })
     .catch(function (error) {
       console.error(error);
@@ -210,9 +274,15 @@ const getLimitedEditionMintedAlchemy = async (address, contractAddress) => {
         let type;
         if (attributes) {
           attributes.forEach((attribute) => {
+            let sotyString = attribute.value;
+            let sotyNumber = parseInt(
+              sotyString.replace("SOTY Edition #", ""),
+              10
+            );
             if (
               attribute.trait_type === "Type" &&
-              attribute.value.startsWith("SOTY")
+              sotyString.startsWith("SOTY Edition #") &&
+              sotyNumber > LIMITED_EDITION_BASE_NUM
             ) {
               ownedLimitedEdition = true;
             }
@@ -375,8 +445,8 @@ const getOwnedTokensNewContract = async (address, contractAddress) => {
               isLimitedEdition = true;
             }
           });
-          if (!isLimitedEdition) {
-            let tokenId = parseInt(token.id.tokenId, 16);
+          let tokenId = parseInt(token.id.tokenId, 16);
+          if (!isLimitedEdition && tokenId > BASE_NUM) {
             tokenIds.push({
               tokenId: tokenId,
             });
@@ -436,20 +506,16 @@ app.post("/owned", async (req, res) => {
     testAddress
   );
 
-  // Get redeemed status
-  let redeemed = true;
-
   let numTokens = await getTotalTokens(newAddress);
   if (numTokens >= BURN_MAX) {
     res.status(500).json({ message: "All new NFTs have been claimed." });
     return;
   }
 
-  console.log(`OG Images fetched for ${address}`);
-
+  console.log(`OG Images fetched for ${address} (originals : ${ogTokens.length})(redeemed : ${redeemedTokens.length})`);
   // Check if wallet has 90s Kids Tokens
   if (!ogTokens) {
-    res.status(500).json({ message: "You have no owned tokens." });
+    res.status(500).json({ message: "Could not get owned tokens" });
     return;
   }
 
@@ -459,41 +525,114 @@ app.post("/owned", async (req, res) => {
   }
 
   let originallyOwned = ogTokens.length + burnedTokens.length;
-    if (originallyOwned >= 50) {
-              res
-                .status(500)
-                .json({ message: "You have already redeemed your tokens." });
-              return;
-    }
-
   // If someone burned and didn't redeem, always resume
   if (
-    originallyOwned < 50 &&
+    TESTING == 0 &&
+    originallyOwned >= SOTY &&
+    burnedTokens.length == 2 &&
+    redeemedTokens.length == 1
+  ) {
+    res.status(200).json({
+      tokens: ogTokens,
+      numToMint: 1,
+      burnedHashes: burnedTokens,
+    });
+    return;
+  } else if (
+    TESTING == 0 &&
+    originallyOwned >= SOTY &&
+    burnedTokens.length == 2 &&
+    redeemedTokens.length == 0
+  ) {
+    res.status(200).json({
+      tokens: ogTokens,
+      numToMint: 2,
+      burnedHashes: burnedTokens,
+    });
+    return;
+  } else if (
+    TESTING == 0 &&
+    originallyOwned >= SOTY &&
+    burnedTokens.length == 1 &&
+    redeemedTokens.length == 0
+  ) {
+    res.status(200).json({
+      tokens: ogTokens,
+      numToMint: 2,
+      burnedHashes: burnedTokens,
+    });
+    return;
+  } else if (
+    TESTING == 0 &&
+    originallyOwned >= SOTY &&
+    burnedTokens.length == 2 &&
+    redeemedTokens.length == 2
+  ) {
+    res.status(200).json({
+      tokens: ogTokens,
+      numToMint: 0,
+      burnedHashes: burnedTokens,
+    });
+    return;
+  } else if (
+    TESTING == 0 &&
+    originallyOwned < SOTY &&
     burnedTokens.length == 1 &&
     redeemedTokens.length < 1
   ) {
     res.status(200).json({
       tokens: ogTokens,
       numToMint: 1,
-      redeemed: redeemed,
       burnedHashes: burnedTokens,
     });
     return;
   } else if (
-    originallyOwned < 50 &&
+    TESTING == 0 &&
+    originallyOwned < SOTY &&
     burnedTokens.length == 1 &&
     redeemedTokens.length == 1
   ) {
     res.status(200).json({
       tokens: ogTokens,
       numToMint: 0,
-      redeemed: redeemed,
       burnedHashes: burnedTokens,
     });
     return;
   }
 
-  if (ogTokens.length < 50) {
+  /*
+    Early Access:
+        Only SOTY members can burn 2 / claim 2  and redeem special tokens
+    Normal Access:
+        SOTY members can burn 2 / claim 2  and redeem special tokens
+        Non SOTY members can burn 1 / claim 1
+  */
+
+  if (EARLY_ACCESS == 1 && ogTokens.length >= SOTY) {
+    // Check if already redeemed
+    if (TESTING == 0 && redeemedTokens.length >= 2) {
+      res
+        .status(500)
+        .json({ message: "You have already redeemed your tokens." });
+      return;
+    } else {
+      res.status(200).json({ tokens: ogTokens });
+    }
+  } else if (EARLY_ACCESS == 1 && ogTokens.length < SOTY) {
+    res.status(500).json({ message: "Only SOTY members get early access" });
+    return;
+  }
+
+  if (EARLY_ACCESS == 0 && ogTokens.length >= SOTY) {
+    if (TESTING == 0 && redeemedTokens.length >= 2) {
+      res
+        .status(500)
+        .json({ message: "You have already redeemed your tokens." });
+      return;
+    } else {
+      res.status(200).json({ tokens: ogTokens });
+    }
+  } else if (EARLY_ACCESS == 0 && ogTokens.length < SOTY) {
     // Check if wallet has all 4 types
     if (!nonSotyCanMint(ogTokens)) {
       res.status(500).json({
@@ -502,7 +641,7 @@ app.post("/owned", async (req, res) => {
       });
       return;
       // Check if wallet already redeemed
-    } else if (redeemedTokens.length >= 1) {
+    } else if (TESTING == 0 && redeemedTokens.length >= 1) {
       res
         .status(500)
         .json({ message: "You have already redeemed your tokens." });
