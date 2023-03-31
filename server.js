@@ -50,6 +50,12 @@ app.use(express.static(path.join(__dirname, "build")));
 
 /* ======================= ENDPOINTS ======================= */
 app.post("/redeemed", async (req, res) => {
+   res.status(200).json({
+     redeemed: true,
+   });
+   return;
+
+/* uncomment for early access
   const body = req.body;
   if (!body || !body.address) {
     res.status(500).json({
@@ -90,10 +96,16 @@ app.post("/redeemed", async (req, res) => {
 
   res.status(200).json({
     redeemed: redeemed,
-  });
+  });*/
 });
 
 app.post("/mintLimitedEdition", async (req, res) => {
+    res.status(500).json({
+      message: "Limited edition period is over",
+    });
+    return;
+
+/* uncomment for early access
   const body = req.body;
   if (!body || !body.address || !body.amount) {
     res.status(500).json({
@@ -155,7 +167,7 @@ app.post("/mintLimitedEdition", async (req, res) => {
   }
 
   let sign = signing(address, amount);
-  res.status(200).json(sign);
+  res.status(200).json(sign);*/
 });
 
 app.post("/mint", async (req, res) => {
@@ -165,6 +177,13 @@ app.post("/mint", async (req, res) => {
       message: "Bad post body",
     });
     return;
+  }
+
+  if (body.amount != 1) {
+        res.status(500).json({
+          message: "You can only mint 1",
+        });
+        return;
   }
 
   const address = body.address.toLowerCase();
@@ -210,7 +229,7 @@ app.post("/mint", async (req, res) => {
     return;
   }
 
-  let sign = signing(address, amount);
+  let sign = signing(address, 1);
   res.status(200).json(sign);
 });
 
