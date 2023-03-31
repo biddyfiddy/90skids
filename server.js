@@ -9,7 +9,7 @@ const port = process.env.PORT || 3001;
 
 const SOTY = 50; // 50
 const BURN_MAX = 450;
-const BASE_NUM = 19; // 249
+const BASE_NUM = 249; // 249
 const LIMITED_EDITION_BASE_NUM = 25; // 25
 
 const DROP_START_DATE = Date.parse(process.env.DROP_DATE);
@@ -64,6 +64,15 @@ app.post("/redeemed", async (req, res) => {
     testAddress
   );
   let ogTokens = ogTokenResponse.tokens;
+
+  if (ogTokenResponse.pageKey) {
+    let moreTokens = await getOwnedTokensOG(
+      address.toLowerCase(),
+      testAddress,
+      ogTokenResponse.pageKey
+    );
+    ogTokens.push(moreTokens);
+  }
 
   // Break out early if the account is not a soty
     if (!ogTokens || ogTokens.length < SOTY) {
