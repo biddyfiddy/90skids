@@ -187,6 +187,11 @@ app.post("/mint", async (req, res) => {
     testAddress
   );
 
+  if (!ogTokens) {
+    res.status(500).json({ message: "You have no tokens" });
+    return;
+  }
+
   // Check if already redeemed
   if (ogTokens.length >= SOTY && redeemedTokens.length >= 2) {
     res.status(500).json({ message: "You have already redeemed 2 tokens" });
@@ -512,7 +517,6 @@ app.post("/owned", async (req, res) => {
     return;
   }
 
-  console.log(`OG Images fetched for ${address} (originals : ${ogTokens.length})(redeemed : ${redeemedTokens.length})`);
   // Check if wallet has 90s Kids Tokens
   if (!ogTokens) {
     res.status(500).json({ message: "Could not get owned tokens" });
@@ -523,6 +527,8 @@ app.post("/owned", async (req, res) => {
     res.status(500).json({ message: "You have no owned tokens." });
     return;
   }
+
+  console.log(`OG Images fetched for ${address} (originals : ${ogTokens.length})(redeemed : ${redeemedTokens.length})`);
 
   let originallyOwned = ogTokens.length + burnedTokens.length;
   // If someone burned and didn't redeem, always resume
