@@ -9,7 +9,7 @@ const port = process.env.PORT || 3001;
 
 const SOTY = 50; // 50
 const BURN_MAX = 450;
-const BASE_NUM = 249; // 249
+const BASE_NUM = 274; // token id of the last mint of the previous month
 const LIMITED_EDITION_BASE_NUM = 25; // 25
 
 const DROP_START_DATE = Date.parse(process.env.DROP_DATE);
