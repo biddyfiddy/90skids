@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import header from "./img/header.png";
 
 import banner from "./img/banner.mp4";
-import comingSoon from "./img/coming_soon_fence.png";
+import comingSoon from "./img/coming_soon_may.png";
 import closed from "./img/closed_fence.png";
 
 class Mint extends React.Component {
@@ -41,7 +41,7 @@ class Mint extends React.Component {
 
         <div style={{ textAlign: "center" }}>
           <img
-            src={closed}
+            src={comingSoon}
             style={{ marginTop: "10px", width: "50%" }}
             alt="closed"
           />
