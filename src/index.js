@@ -5,7 +5,7 @@ import App from "./App";
 import Layout from "./Layout";
 import About from "./About";
 import Shop from "./Shop";
-import Mint from "./Mint";
+import Mint from "./DisabledMint";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 ReactDOM.render(
