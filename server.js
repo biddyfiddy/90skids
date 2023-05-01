@@ -8,14 +8,14 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 const SOTY = 50; // 50
-const BURN_MAX = 450;
-const BASE_NUM = 274; // token id of the last mint of the previous month
-const LIMITED_EDITION_BASE_NUM = 25; // 25
+const BURN_MAX = 650; // 400 + 250
+const BASE_NUM = 449; //  token id of the last mint of the previous month
+const LIMITED_EDITION_BASE_NUM = 50; // 50
 
 const DROP_START_DATE = Date.parse(process.env.DROP_DATE);
 const NULL_ADDRESS = "0x000000000000000000000000000000000000dead";
 const TESTING = process.env.TESTING;
-const EARLY_ACCESS = 0;
+const EARLY_ACCESS = 1;
 //const EARLY_ACCESS = process.env.EARLY_ACCESS;
 const ETHER_NETWORK = process.env.ETHER_NETWORK;
 const API_KEY = process.env.API_KEY;
@@ -51,12 +51,6 @@ app.use(express.static(path.join(__dirname, "build")));
 
 /* ======================= ENDPOINTS ======================= */
 app.post("/redeemed", async (req, res) => {
-   res.status(200).json({
-     redeemed: true,
-   });
-   return;
-
-/* uncomment for early access
   const body = req.body;
   if (!body || !body.address) {
     res.status(500).json({
@@ -82,7 +76,7 @@ app.post("/redeemed", async (req, res) => {
   }
 
   // Break out early if the account is not a soty
-    if (!ogTokens || ogTokens.length < SOTY) {
+  if (!ogTokens || ogTokens.length < SOTY) {
     res.status(200).json({
       redeemed: true,
     });
@@ -97,16 +91,10 @@ app.post("/redeemed", async (req, res) => {
 
   res.status(200).json({
     redeemed: redeemed,
-  });*/
+  });
 });
 
 app.post("/mintLimitedEdition", async (req, res) => {
-    res.status(500).json({
-      message: "Limited edition period is over",
-    });
-    return;
-
-/* uncomment for early access
   const body = req.body;
   if (!body || !body.address || !body.amount) {
     res.status(500).json({
@@ -141,13 +129,13 @@ app.post("/mintLimitedEdition", async (req, res) => {
     );
     ogTokens.push(moreTokens);
   }
-    // Check for SOTY
-    if (!ogTokens || ogTokens.length < SOTY) {
-      res.status(500).json({
-        message: "You cannot claim a limited edition token.",
-      });
-      return;
-    }
+  // Check for SOTY
+  if (!ogTokens || ogTokens.length < SOTY) {
+    res.status(500).json({
+      message: "You cannot claim a limited edition token.",
+    });
+    return;
+  }
 
   // Get redeemed status
   let redeemed = await getLimitedEditionMintedAlchemy(
@@ -168,7 +156,7 @@ app.post("/mintLimitedEdition", async (req, res) => {
   }
 
   let sign = signing(address, amount);
-  res.status(200).json(sign);*/
+  res.status(200).json(sign);
 });
 
 app.post("/mint", async (req, res) => {
@@ -180,12 +168,12 @@ app.post("/mint", async (req, res) => {
     return;
   }
 
-  if (body.amount != 1) {
+  /*  if (body.amount != 1) {
         res.status(500).json({
           message: "You can only mint 1",
         });
         return;
-  }
+  }*/
 
   const address = body.address.toLowerCase();
   const amount = body.amount;
@@ -230,7 +218,7 @@ app.post("/mint", async (req, res) => {
     return;
   }
 
-  let sign = signing(address, 1);
+  let sign = signing(address, amount);
   res.status(200).json(sign);
 });
 
@@ -557,7 +545,9 @@ app.post("/owned", async (req, res) => {
     return;
   }
 
-  console.log(`OG Images fetched for ${address} (originals : ${ogTokens.length})(redeemed : ${redeemedTokens.length})`);
+  console.log(
+    `OG Images fetched for ${address} (originals : ${ogTokens.length})(redeemed : ${redeemedTokens.length})`
+  );
 
   let originallyOwned = ogTokens.length + burnedTokens.length;
   // If someone burned and didn't redeem, always resume
