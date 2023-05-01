@@ -6,8 +6,6 @@ import { Link } from "react-router-dom";
 
 import one from "./img/2.png";
 import oneBw from "./img/2_bw.png";
-import flip from "./img/flip.png";
-import flipBw from "./img/flip_bw.png";
 import two from "./img/1.png";
 import twoBw from "./img/1_bw.png";
 import three from "./img/3.png";
@@ -146,7 +144,7 @@ class App extends React.Component {
             onMouseLeave={this.handleMouseLeave}
             id="pane2Hover"
           >
-            <Link to="/flip">
+            <Link to="/about">
               <div
                 style={{
                   fontWeight: "bold",
@@ -158,12 +156,14 @@ class App extends React.Component {
                 }}
                 id="pane2Hover"
               >
+                <img src={project} style={{ height: "20px" }} alt="project" />
+                <br />
               </div>
               <img
                 id="pane2Hover"
-                src={flip}
+                src={pane2Hover ? two : twoBw}
                 style={{
-                  opacity: pane2Hover ? "0.75" : "0.5",
+                  opacity: pane2Hover ? "1.0" : "0.5",
                   width: "100%",
                   transition: "opacity 300ms ease-in",
                   MozTransition: "opacity 300ms ease-in",
