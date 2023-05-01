@@ -41,7 +41,7 @@ class Mint extends React.Component {
 
         <div style={{ textAlign: "center" }}>
           <img
-            src={comingSoon}
+            src={closed}
             style={{ marginTop: "10px", width: "50%" }}
             alt="closed"
           />
