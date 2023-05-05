@@ -124,7 +124,7 @@ class App extends React.Component {
                 }}
                 id="pane1Hover"
               >
-                <img src={shop} style={{ height: "20px" }} alt="shop" />
+
               </div>
               <img
                 id="pane1Hover"
@@ -195,7 +195,7 @@ class App extends React.Component {
                 }}
                 id="pane3Hover"
               >
-                <img src={mint} style={{ height: "20px" }} alt="mint" />
+
               </div>
               <img
                 id="pane3Hover"
