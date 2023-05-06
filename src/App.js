@@ -123,9 +123,7 @@ class App extends React.Component {
                   zIndex: "1",
                 }}
                 id="pane1Hover"
-              >
-
-              </div>
+              ></div>
               <img
                 id="pane1Hover"
                 src={pane1Hover ? one : oneBw}
@@ -157,8 +155,7 @@ class App extends React.Component {
                   zIndex: "1",
                 }}
                 id="pane2Hover"
-              >
-              </div>
+              ></div>
               <img
                 id="pane2Hover"
                 src={flip}
@@ -194,9 +191,7 @@ class App extends React.Component {
                   zIndex: "1",
                 }}
                 id="pane3Hover"
-              >
-
-              </div>
+              ></div>
               <img
                 id="pane3Hover"
                 src={pane3Hover ? three : threeBw}
