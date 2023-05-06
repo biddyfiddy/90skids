@@ -8,7 +8,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 const SOTY = 50; // 50
-const BURN_MAX = 650; // 400 + 250
+const BURN_MAX = 664; // 400 + 250 + 14 shitty tokens  (414 from old 250 new)
 const BASE_NUM = 449; //  token id of the last mint of the previous month
 const LIMITED_EDITION_BASE_NUM = 50; // 50
 
@@ -411,22 +411,60 @@ const getOwnedTokensOG = async (address, contractAddress, page) => {
     });
 };
 
-const getTotalTokens = async (contractAddress) => {
+const getTotalTokens = async (contractAddress, startToken) => {
   let alchemyKey = ETHER_NETWORK === "mainnet" ? ALCHEMY_KEY : ALCHEMY_KEY_TEST;
-  const options = {
-    method: "GET",
-    url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/nft/v2/${alchemyKey}/getNFTsForCollection`,
-    params: {
-      contractAddress: contractAddress,
-      withMetadata: "true",
-    },
-    headers: { accept: "application/json" },
-  };
+  let options;
+  if (startToken) {
+    options = {
+      method: "GET",
+      url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/nft/v2/${alchemyKey}/getNFTsForCollection`,
+      params: {
+        startToken: startToken,
+        contractAddress: contractAddress,
+        withMetadata: "true",
+      },
+      headers: { accept: "application/json" },
+    };
+  } else {
+    options = {
+      method: "GET",
+      url: `https://eth-${ETHER_NETWORK}.g.alchemy.com/nft/v2/${alchemyKey}/getNFTsForCollection`,
+      params: {
+        contractAddress: contractAddress,
+        withMetadata: "true",
+      },
+      headers: { accept: "application/json" },
+    };
+  }
+
   return axios
     .request(options)
     .then((response) => {
       let responseData = response.data;
-      return responseData.nfts.length;
+      let nextToken = undefined;
+
+      // If response has nextToken, we need to page
+      if (responseData.nextToken) {
+        nextToken = responseData.nextToken;
+      }
+
+      // If response has tokens, use them
+      let tokens = []
+      if (responseData.nfts && responseData.nfts.length > 0) {
+        tokens = responseData.nfts
+      }
+
+      // Filter non-soty tokens to count number of generic tokens claimed
+      tokens = tokens
+              .filter((token) => {
+                let title = token.title
+                return !token.title.startsWith("SOTY Edition");
+              })
+      // Return the amount of generic tokens in the page, and the start of the next page
+      return {
+        number: tokens.length,
+        nextToken: nextToken
+      }
     })
     .catch((err) => {
       console.log(err);
@@ -528,9 +566,17 @@ app.post("/owned", async (req, res) => {
     testAddress
   );
 
-  let numTokens = await getTotalTokens(newAddress);
+  let totalTokensResponse = await getTotalTokens(newAddress);
+  let numTokens = totalTokensResponse.number;
+  while (totalTokensResponse.nextToken) {
+    totalTokensResponse = await getTotalTokens(newAddress, totalTokensResponse.nextToken);
+    numTokens += totalTokensResponse.number;
+  }
+
+  console.log("Total General Tokens Claimed : " + numTokens);
+
   if (numTokens >= BURN_MAX) {
-    res.status(500).json({ message: "All new NFTs have been claimed." });
+    res.status(500).json({ message: "All NFTs from this drop have been claimed." });
     return;
   }
 

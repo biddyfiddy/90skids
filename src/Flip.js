@@ -6,15 +6,16 @@ class Flip extends React.Component {
 
   render() {
     return (
-      <iframe src="assets/iframe.html?hash=RkY2RDc5NjZBRUQrdGpzNGk5aGJkYw=="
+      <iframe
+        src="assets/iframe.html?hash=RkY2RDc5NjZBRUQrdGpzNGk5aGJkYw=="
         width="100%"
         height="100%"
         seamless="seamless"
         scrolling="no"
         frameborder="0"
         allowtransparency="true"
-        allowfullscreen="true">
-      </iframe>
+        allowfullscreen="true"
+      ></iframe>
     );
   }
 }

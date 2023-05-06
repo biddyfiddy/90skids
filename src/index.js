@@ -5,8 +5,8 @@ import App from "./App";
 import Layout from "./Layout";
 import About from "./About";
 import Shop from "./Shop";
-import Mint from "./DisabledMint";
 import Flip from "./Flip";
+import Mint from "./Mint";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 ReactDOM.render(
